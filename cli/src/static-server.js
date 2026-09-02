@@ -43,7 +43,11 @@ function serveStatic(req, res) {
   try {
     const urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
     let filePath = path.normalize(path.join(dir, urlPath));
-    if (!filePath.startsWith(path.normalize(dir))) {
+    const root = path.normalize(dir);
+    // Path-boundary check, not a bare string-prefix check: startsWith(root)
+    // alone would also accept a sibling directory like "<root>-evil" since
+    // that string literally starts with "<root>".
+    if (filePath !== root && !filePath.startsWith(root + path.sep)) {
       res.writeHead(403);
       res.end('Forbidden');
       return;
