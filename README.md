@@ -53,7 +53,8 @@ it rebuilds and reinstalls the global command before showing the menu.
 ### After the first run
 
 Once step 2 above has run at least once, `tokentelemetry` is on your `PATH` — you don't need
-the repo checkout or `node cli/setup.js` for day-to-day use, just the commands directly:
+the repo checkout for day-to-day use, just the commands directly. None of these rebuild or
+reinstall anything, they just do the one thing:
 
 | Command | What it does |
 |---|---|
@@ -63,6 +64,11 @@ the repo checkout or `node cli/setup.js` for day-to-day use, just the commands d
 | `tokentelemetry stop` | Stop everything started by `start` |
 | `tokentelemetry uninstall` | Remove the Claude Code hooks (leaves app files and the database in place) |
 | `tokentelemetry uninstall --purge` | Remove the hooks **and** delete `~/.tokentelemetry` (app files + database) completely — this is the full, end-to-end teardown |
+
+Prefer running from the repo checkout instead of relying on global `PATH`? `cli/setup.js`
+has the same fast subcommands — `node cli/setup.js start`, `stop`, `status`, `delete`
+(equivalent to `uninstall --purge`) — none of which rebuild or reinstall anything either.
+Only bare `node cli/setup.js` (or `node cli/setup.js install`) does the full build.
 
 Full details: [`cli/README.md`](cli/README.md).
 

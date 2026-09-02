@@ -43,8 +43,24 @@ tokentelemetry uninstall    # remove the Claude Code hooks (add --purge to also 
 
 Then open **http://127.0.0.1:5173**.
 
-If this ever gets published to npm for real, all of the above collapses to
-plain `npx tokentelemetry ...` — no local build/install step needed.
+None of the commands above rebuild or reinstall anything — each just does
+the one thing named. Only bare `node cli/setup.js` (or `node cli/setup.js
+install`) does the full detect + build + install. If you're running from
+the repo checkout rather than the global command, `cli/setup.js` has the
+same fast subcommands and skips the rebuild too:
+
+```
+node cli/setup.js start     # start the backend, daemon, and dashboard
+node cli/setup.js stop      # stop everything
+node cli/setup.js status    # show what's running
+node cli/setup.js delete    # full teardown: remove hooks + ~/.tokentelemetry
+node cli/setup.js uninstall # remove hooks only, keep app files/database (add --purge for delete's behavior)
+node cli/setup.js install   # re-run the full build+install, e.g. after `git pull`
+```
+
+If this ever gets published to npm for real, the global-command usage above
+collapses to plain `npx tokentelemetry ...` — no local build/install step
+needed.
 
 ## What "install" does
 

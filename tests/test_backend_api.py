@@ -49,13 +49,26 @@ def seed_db():
         conn.execute(
             """INSERT INTO events(event_time,event_type,session_id,project,cwd,client,tool_name)
                VALUES(?,?,?,?,?,?,?)""",
-            ("2024-01-01T00:00:00Z", "PostToolUse", "sess-1", "demo-project", "/tmp/demo", "vscode", "mcp_github"),
+            ("2024-01-01T00:00:00Z", "PostToolUse", "sess-1", "demo-project", "/tmp/demo", "vscode", "mcp__github__search"),
         )
     conn.execute(
         """INSERT INTO events(event_time,event_type,session_id,project,cwd,client,tool_name)
            VALUES(?,?,?,?,?,?,?)""",
         ("2024-01-01T00:00:00Z", "PreToolUse", "sess-1", "demo-project", "/tmp/demo", "vscode", "Read"),
     )
+    # tool_calls is what reconcile backfills from transcripts -- this is the
+    # source MCP usage should be read from so historical calls show up too,
+    # not just ones made after the hooks were installed (events-only).
+    for tool_name, tool_use_id in [
+        ("mcp__github__search_issues", "t1"),
+        ("mcp__github__create_pr", "t2"),
+        ("mcp__linear__list_issues", "t3"),
+    ]:
+        conn.execute(
+            """INSERT INTO tool_calls(event_time,session_id,project,cwd,client,tool_name,tool_use_id,transcript_path,transcript_line)
+               VALUES(?,?,?,?,?,?,?,?,?)""",
+            ("2024-01-01T00:00:00Z", "sess-1", "demo-project", "/tmp/demo", "vscode", tool_name, tool_use_id, "/tmp/t.jsonl", 1),
+        )
     conn.commit()
     conn.close()
     yield
@@ -100,8 +113,17 @@ def test_project_attribution_summary(client):
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data["top_skill"]["skill_name"] == "code-review"
-    assert data["top_mcp_server"]["server_name"] == "mcp_github"
+    assert data["top_mcp_server"]["server_name"] == "github"
+    assert data["top_mcp_server"]["call_count"] == 2
     assert data["top_hook"]["hook_name"] == "PostToolUse"
+
+
+def test_mcp_servers_groups_by_server_not_full_tool_name(client):
+    resp = client.get("/api/v1/mcp")
+    assert resp.status_code == 200
+    by_name = {row["server_name"]: row for row in resp.json()["data"]}
+    assert by_name["github"]["call_count"] == 2
+    assert by_name["linear"]["call_count"] == 1
 
 
 def test_project_attribution_summary_unknown_project(client):

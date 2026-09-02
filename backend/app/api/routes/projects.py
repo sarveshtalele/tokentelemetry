@@ -1,5 +1,7 @@
+from collections import Counter
 from fastapi import APIRouter
 from ...db.connection import connect
+from .mcp import _server_name
 
 router = APIRouter()
 
@@ -70,14 +72,19 @@ async def get_project_attribution_summary(project: str):
         """,
         (project,),
     ).fetchone()
-    top_mcp = conn.execute(
-        """
-        SELECT tool_name as server_name, COUNT(*) as call_count
-        FROM events WHERE project=? AND (tool_name LIKE 'mcp_%' OR event_type LIKE '%mcp%')
-        GROUP BY tool_name ORDER BY call_count DESC LIMIT 1
-        """,
+    # tool_calls is populated by reconcile from session transcripts (same
+    # source the Tools page uses), so this includes historical usage too —
+    # not just calls made after the hooks were installed like the live-only
+    # `events` table would.
+    mcp_rows = conn.execute(
+        "SELECT tool_name FROM tool_calls WHERE project=? AND tool_name LIKE 'mcp_%'",
         (project,),
-    ).fetchone()
+    ).fetchall()
+    top_mcp = None
+    if mcp_rows:
+        counts = Counter(_server_name(r["tool_name"]) for r in mcp_rows)
+        server_name, call_count = counts.most_common(1)[0]
+        top_mcp = {"server_name": server_name, "call_count": call_count}
     top_hook = conn.execute(
         """
         SELECT event_type as hook_name, COUNT(*) as call_count
@@ -91,7 +98,7 @@ async def get_project_attribution_summary(project: str):
     return {
         "data": {
             "top_skill": dict(top_skill) if top_skill else None,
-            "top_mcp_server": dict(top_mcp) if top_mcp else None,
+            "top_mcp_server": top_mcp,
             "top_hook": dict(top_hook) if top_hook else None,
         }
     }

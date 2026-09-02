@@ -108,6 +108,12 @@ def ingest_transcript(conn, path):
 
             if str(name).lower() == "skill":
                 skill = first(inp, ["skill", "name", "skill_name"], "unknown")
+                plugin = first(inp, ["plugin_name", "plugin"], None)
+                # Plugin-provided skills are commonly referenced as "plugin:skill"
+                # (e.g. "superpowers:brainstorming") when no separate plugin field
+                # is present in the tool_use input.
+                if not plugin and isinstance(skill, str) and ":" in skill:
+                    plugin, skill = skill.split(":", 1)
                 if not _skill_exists(conn, session_id, str(path), idx, skill, tool_use_id):
                     conn.execute(
                         """INSERT INTO skill_events(
@@ -115,7 +121,7 @@ def ingest_transcript(conn, path):
                             source,plugin_name,transcript_path,payload_json
                         ) VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
                         (timestamp, session_id, pname, cwd, client, skill, "tool", "transcript",
-                         None, str(path), json.dumps({"tool_use_id": tool_use_id, **inp}, ensure_ascii=False))
+                         plugin, str(path), json.dumps({"tool_use_id": tool_use_id, **inp}, ensure_ascii=False))
                     )
 
     return len(lines)

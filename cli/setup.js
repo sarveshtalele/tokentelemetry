@@ -1,10 +1,21 @@
 #!/usr/bin/env node
-// One-shot setup: detect the system, build + install the `tokentelemetry`
-// command globally, run the app install (Python env + Claude Code hooks),
-// then hand control to an interactive Start/Stop/Status/Uninstall menu.
+// First run (or after pulling new commits): detects the system, builds +
+// installs the `tokentelemetry` command globally, runs the app install
+// (Python env + Claude Code hooks), then hands control to an interactive
+// Start/Stop/Status/Uninstall menu.
 //
-// Usage (from a fresh git clone):
-//   node cli/setup.js
+// Every run after that doesn't need any of the build/install work redone —
+// use the fast subcommands instead, which skip straight to the action:
+//   node cli/setup.js start     Start the backend, daemon, and dashboard
+//   node cli/setup.js stop      Stop everything
+//   node cli/setup.js status    Show what's running
+//   node cli/setup.js delete    Full teardown: remove hooks + ~/.tokentelemetry
+//   node cli/setup.js uninstall Remove hooks only, keep app files/database
+//   node cli/setup.js install   Re-run the full build+install (e.g. after `git pull`)
+//
+// (Once installed, the equivalent "tokentelemetry start/stop/status/..."
+// global command is just as fast — these subcommands exist for people who'd
+// rather not depend on it being on PATH.)
 'use strict';
 
 const os = require('os');
@@ -127,14 +138,46 @@ async function interactiveLoop() {
   console.log('Done. Run "node cli/setup.js" again anytime, or use the "tokentelemetry" command directly.');
 }
 
-async function main() {
+async function fullSetup() {
   detectSystem();
   buildAndInstallGlobalCommand();
   runLocalInstall();
   await interactiveLoop();
 }
 
+async function main() {
+  const cmd = process.argv[2];
+  const { start, stop, status } = require(path.join(CLI_DIR, 'src', 'run.js'));
+  const { uninstall } = require(path.join(CLI_DIR, 'src', 'install.js'));
+
+  switch (cmd) {
+    case undefined:
+    case 'install':
+      await fullSetup();
+      break;
+    case 'start':
+      start();
+      break;
+    case 'stop':
+      stop();
+      break;
+    case 'status':
+      await status();
+      break;
+    case 'delete':
+      uninstall({ purge: true });
+      break;
+    case 'uninstall':
+      uninstall({ purge: process.argv.includes('--purge') });
+      break;
+    default:
+      console.error(`Unknown command: "${cmd}"`);
+      console.error('Usage: node cli/setup.js [install|start|stop|status|delete|uninstall]');
+      process.exitCode = 1;
+  }
+}
+
 main().catch((err) => {
-  console.error(`\nSetup failed: ${err.message}`);
+  console.error(`\nError: ${err.message}`);
   process.exitCode = 1;
 });

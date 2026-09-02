@@ -90,5 +90,8 @@ def connect(db_path):
     _add_column(conn, "usage", "max_output_tokens", "INTEGER DEFAULT 0")
     # v4 -> v5: attributions.project
     _add_column(conn, "attributions", "project", "TEXT")
+    # v5 -> v6: full (untruncated) prompt/response text
+    _add_column(conn, "usage", "prompt_full", "TEXT")
+    _add_column(conn, "usage", "response_full", "TEXT")
     conn.commit()
     return conn
