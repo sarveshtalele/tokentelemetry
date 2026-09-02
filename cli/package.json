@@ -1,0 +1,31 @@
+{
+  "name": "tokentelemetry",
+  "version": "1.0.0",
+  "description": "Install and run the Claude Telemetry Enterprise console (local FastAPI backend + React dashboard, with Claude Code hook wiring) as a global tool on Windows, macOS, and Linux.",
+  "bin": {
+    "tokentelemetry": "bin/tokentelemetry.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "vendor",
+    "README.md"
+  ],
+  "scripts": {
+    "prepack": "node scripts/build-vendor.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "telemetry",
+    "observability",
+    "dashboard"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sarveshtalele/tokentelemetry.git"
+  }
+}

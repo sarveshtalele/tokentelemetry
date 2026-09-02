@@ -4,6 +4,8 @@ import { GlobalDashboard } from './pages/GlobalDashboard';
 import { ProjectsList } from './pages/ProjectsList';
 import { ProjectDetail } from './pages/ProjectDetail';
 import { Requests } from './pages/Requests';
+import { RequestFull } from './pages/RequestFull';
+import { About } from './pages/About';
 import { Tools } from './pages/Tools';
 import { Skills } from './pages/Skills';
 import { Sessions } from './pages/Sessions';
@@ -20,6 +22,8 @@ export default function App() {
           <Route path="/projects" element={<ProjectsList />} />
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/requests" element={<Requests />} />
+          <Route path="/requests/:id" element={<RequestFull />} />
+          <Route path="/about" element={<About />} />
           <Route path="/tools" element={<Tools />} />
           <Route path="/skills" element={<Skills />} />
           <Route path="/sessions" element={<Sessions />} />

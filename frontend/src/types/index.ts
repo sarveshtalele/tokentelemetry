@@ -17,6 +17,8 @@ export interface UsageRow {
   max_output_tokens: number;
   prompt_preview: string;
   response_preview: string;
+  prompt_full?: string;
+  response_full?: string;
 }
 
 export interface TimelinePoint {
@@ -111,6 +113,12 @@ export interface LiveUpdate {
   type: 'metrics' | 'events' | 'reconcile';
   data: Record<string, number>;
   timestamp: string;
+}
+
+export interface AttributionSummary {
+  top_skill: { skill_name: string; call_count: number } | null;
+  top_mcp_server: { server_name: string; call_count: number } | null;
+  top_hook: { hook_name: string; call_count: number } | null;
 }
 
 export interface ApiEnvelope<T> {

@@ -10,7 +10,7 @@ import { PageHead, ErrorPanel } from './GlobalDashboard';
 export function Clients() {
   const { data: clients = [], loading, error } = useApi(() => getClients(), []);
   if (error) return <ErrorPanel message={error.message} />;
-  if (loading) return <div className="p-10 text-center text-slate-500">Loading clients…</div>;
+  if (loading) return <div className="p-10 text-center text-ink-soft">Loading clients…</div>;
 
   const totalTokens = clients.reduce((a, c) => a + (c.total_tokens || 0), 0);
 

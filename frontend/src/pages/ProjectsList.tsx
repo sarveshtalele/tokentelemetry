@@ -13,7 +13,7 @@ export function ProjectsList() {
   const filtered = useMemo(() => projects.filter((p) => p.project.toLowerCase().includes(q.toLowerCase())), [projects, q]);
 
   if (error) return <ErrorPanel message={error.message} />;
-  if (loading) return <div className="p-10 text-center text-slate-500">Loading projects…</div>;
+  if (loading) return <div className="p-10 text-center text-ink-soft">Loading projects…</div>;
 
   return (
     <div className="space-y-6">
@@ -31,11 +31,11 @@ export function ProjectsList() {
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search projects…"
-        className="h-10 border border-line bg-white rounded-md px-3 text-sm w-full max-w-sm outline-none focus:border-accent focus:ring-4 focus:ring-accent-soft"
+        className="h-10 border border-line bg-surface rounded-md px-3 text-sm w-full max-w-sm outline-none focus:border-accent focus:ring-4 focus:ring-accent-soft"
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.length === 0 ? (
-          <div className="col-span-full p-10 text-center text-slate-500 bg-surface border border-line rounded-lg">No projects match.</div>
+          <div className="col-span-full p-10 text-center text-ink-soft bg-surface border border-line rounded-lg">No projects match.</div>
         ) : (
           filtered.map((p) => <ProjectCard key={p.project} p={p} />)
         )}

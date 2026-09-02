@@ -19,7 +19,7 @@ export function Skills() {
   }, [skills]);
 
   if (error) return <ErrorPanel message={error.message} />;
-  if (loading) return <div className="p-10 text-center text-slate-500">Loading skills…</div>;
+  if (loading) return <div className="p-10 text-center text-ink-soft">Loading skills…</div>;
 
   const totalCalls = skills.reduce((a, s) => a + (s.call_count || 0), 0);
 

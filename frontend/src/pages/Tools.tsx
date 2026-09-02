@@ -10,7 +10,7 @@ import { PageHead, ErrorPanel } from './GlobalDashboard';
 export function Tools() {
   const { data: tools = [], loading, error } = useApi(() => getTools(), []);
   if (error) return <ErrorPanel message={error.message} />;
-  if (loading) return <div className="p-10 text-center text-slate-500">Loading tools…</div>;
+  if (loading) return <div className="p-10 text-center text-ink-soft">Loading tools…</div>;
 
   const totalCalls = tools.reduce((a, t) => a + (t.call_count || 0), 0);
 

@@ -9,7 +9,7 @@ export function ProjectCard({ p }: { p: ProjectSummary }) {
   return (
     <Link
       to={`/projects/${encodeURIComponent(p.project)}`}
-      className="block bg-surface border border-line rounded-lg p-4 hover:border-slate-300 hover:shadow-[0_2px_10px_rgba(15,23,42,.06)] transition-shadow"
+      className="block bg-surface border border-line rounded-lg p-4 hover:border-ink-soft hover:shadow-[0_2px_10px_rgba(15,23,42,.06)] transition-shadow"
     >
       <div className="flex items-center gap-3 mb-3">
         <div className="w-9 h-9 rounded-md bg-accent-soft text-accent-strong grid place-items-center font-extrabold shrink-0">
@@ -17,21 +17,21 @@ export function ProjectCard({ p }: { p: ProjectSummary }) {
         </div>
         <div className="min-w-0">
           <div className="font-bold truncate">{p.project}</div>
-          <div className="text-[11px] text-slate-500">{p.sessions} sessions</div>
+          <div className="text-[11px] text-ink-soft">{p.sessions} sessions</div>
         </div>
       </div>
       <div className="flex items-center justify-between text-sm">
         <div>
           <div className="font-bold">{fmt(p.total_tokens)}</div>
-          <div className="text-[11px] text-slate-500">tokens</div>
+          <div className="text-[11px] text-ink-soft">tokens</div>
         </div>
         <div>
           <div className="font-bold">{fmt(p.requests)}</div>
-          <div className="text-[11px] text-slate-500">requests</div>
+          <div className="text-[11px] text-ink-soft">requests</div>
         </div>
         <div>
           <div className="font-bold">{ago(p.last_activity)}</div>
-          <div className="text-[11px] text-slate-500">last active</div>
+          <div className="text-[11px] text-ink-soft">last active</div>
         </div>
         <Badge tone={tone}>{health}%</Badge>
       </div>

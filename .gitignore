@@ -8,6 +8,11 @@ __pycache__/
 frontend/node_modules/
 frontend/dist/
 
+# npx installer package (generated bundle, built by cli/scripts/build-vendor.js)
+cli/vendor/
+cli/node_modules/
+cli/*.tgz
+
 # Test artifacts
 report.html
 tests/__pycache__/

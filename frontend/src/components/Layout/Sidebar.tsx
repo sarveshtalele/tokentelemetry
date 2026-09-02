@@ -10,6 +10,7 @@ import {
   IconMonitor,
   IconPlug,
   IconSettings,
+  IconAbout,
   IconChevronLeft,
   IconChevronRight,
 } from '../ui/Icons';
@@ -23,6 +24,7 @@ const NAV_ITEMS = [
   { to: '/sessions', label: 'Sessions', Icon: IconChat },
   { to: '/clients', label: 'Clients', Icon: IconMonitor },
   { to: '/mcp-plugins', label: 'MCP & Plugins', Icon: IconPlug },
+  { to: '/about', label: 'About', Icon: IconAbout },
 ];
 
 export function Sidebar() {

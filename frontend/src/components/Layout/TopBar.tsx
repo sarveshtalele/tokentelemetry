@@ -1,5 +1,6 @@
 import { useLocation, Link } from 'react-router-dom';
-import { IconRefresh } from '../ui/Icons';
+import { IconRefresh, IconSun, IconMoon } from '../ui/Icons';
+import { useTheme } from '../../hooks/useTheme';
 
 const LABELS: Record<string, string> = {
   projects: 'Projects',
@@ -10,13 +11,15 @@ const LABELS: Record<string, string> = {
   clients: 'Clients & IDEs',
   'mcp-plugins': 'MCP & Plugins',
   settings: 'Telemetry settings',
+  about: 'About',
 };
 
 export function TopBar() {
   const loc = useLocation();
   const parts = loc.pathname.split('/').filter(Boolean);
+  const { theme, toggle } = useTheme();
   return (
-    <header className="h-16 bg-white/90 backdrop-blur border-b border-line flex items-center justify-between px-7 sticky top-0 z-10">
+    <header className="h-16 bg-surface/90 backdrop-blur border-b border-line flex items-center justify-between px-7 sticky top-0 z-10">
       <div className="flex items-center gap-2 text-sm text-ink-soft">
         <strong className="text-ink">Telemetry</strong>
         {parts.length === 0 ? (
@@ -41,13 +44,21 @@ export function TopBar() {
       </div>
       <div className="flex items-center gap-2">
         <button
+          onClick={toggle}
+          aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          className="flex items-center justify-center border border-line bg-surface text-ink rounded-md w-9 h-9 hover:border-ink-soft"
+        >
+          {theme === 'dark' ? <IconSun /> : <IconMoon />}
+        </button>
+        <button
           onClick={() => window.location.reload()}
-          className="flex items-center gap-1.5 border border-line bg-white rounded-md px-3 py-2 text-sm font-semibold hover:border-slate-300"
+          className="flex items-center gap-1.5 border border-line bg-surface text-ink rounded-md px-3 py-2 text-sm font-semibold hover:border-ink-soft"
         >
           <IconRefresh width={14} height={14} /> Refresh
         </button>
-        <span className="flex items-center gap-1.5 bg-accent text-white rounded-md px-3 py-2 text-sm font-semibold">
-          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> Live
+        <span className="flex items-center gap-1.5 bg-accent text-on-accent rounded-md px-3 py-2 text-sm font-semibold">
+          <span className="w-1.5 h-1.5 rounded-full bg-on-accent animate-pulse" /> Live
         </span>
       </div>
     </header>

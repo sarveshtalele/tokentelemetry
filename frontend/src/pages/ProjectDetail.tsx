@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useApi } from '../hooks/useApi';
-import { getProjects } from '../api/projects';
+import { getProjects, getProjectAttributionSummary } from '../api/projects';
 import { getAttributions } from '../api/attributions';
 import { getUsageByProject } from '../api/usage';
 import { getSessions } from '../api/sessions';
@@ -26,12 +26,14 @@ export function ProjectDetail() {
   const { data: projects = [], loading, error } = useApi(() => getProjects(), []);
   const { data: attributions = [] } = useApi(() => getAttributions(), []);
 
+  const { data: attrSummary } = useApi(() => getProjectAttributionSummary(id), [id]);
+
   const project = useMemo(() => projects.find((p) => p.project === id), [projects, id]);
   const projectAttrs = useMemo(() => attributions.filter((a) => a.project === id), [attributions, id]);
 
   if (error) return <ErrorPanel message={error.message} />;
-  if (loading) return <div className="p-10 text-center text-slate-500">Loading project…</div>;
-  if (!project) return <div className="p-10 text-center text-slate-500 bg-surface border border-line rounded-lg">No project named "{id}" found in telemetry data.</div>;
+  if (loading) return <div className="p-10 text-center text-ink-soft">Loading project…</div>;
+  if (!project) return <div className="p-10 text-center text-ink-soft bg-surface border border-line rounded-lg">No project named "{id}" found in telemetry data.</div>;
 
   const health = healthOf(project.last_activity);
 
@@ -77,19 +79,19 @@ export function ProjectDetail() {
                           {attributionLabel(a.category)}
                           {a.category === '[unattributed]' && (
                             <Tooltip label={UNATTRIBUTED_HINT}>
-                              <IconInfo className="text-slate-400" />
+                              <IconInfo className="text-ink-soft" />
                             </Tooltip>
                           )}
                         </span>
                         <b>{fmt(a.estimated_tokens)}</b>
                       </div>
-                      <div className="h-1.5 rounded-full bg-slate-200 mt-1.5 overflow-hidden">
+                      <div className="h-1.5 rounded-full bg-line mt-1.5 overflow-hidden">
                         <div className="h-full bg-accent rounded-full" style={{ width: `${(a.estimated_tokens / max) * 100}%` }} />
                       </div>
                     </div>
                   );
                 })}
-              {projectAttrs.length === 0 && <div className="text-slate-500 text-sm">No attribution data for this project.</div>}
+              {projectAttrs.length === 0 && <div className="text-ink-soft text-sm">No attribution data for this project.</div>}
             </div>
             <div className="bg-surface border border-line rounded-lg p-4">
               <h3 className="text-sm font-bold mb-3">Project profile</h3>
@@ -97,6 +99,27 @@ export function ProjectDetail() {
               <KV k="Clients" v={String(project.client_count)} />
               <KV k="Last activity" v={ago(project.last_activity)} />
               <KV k="Attribution" v={<Badge tone="warning">Estimated</Badge>} />
+            </div>
+          </div>
+
+          <div className="bg-surface border border-line rounded-lg p-4">
+            <h3 className="text-sm font-bold mb-3">Most used in this project</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <MostUsedTile
+                label="Top skill"
+                name={attrSummary?.top_skill?.skill_name}
+                count={attrSummary?.top_skill?.call_count}
+              />
+              <MostUsedTile
+                label="Top MCP server"
+                name={attrSummary?.top_mcp_server?.server_name}
+                count={attrSummary?.top_mcp_server?.call_count}
+              />
+              <MostUsedTile
+                label="Top hook"
+                name={attrSummary?.top_hook?.hook_name}
+                count={attrSummary?.top_hook?.call_count}
+              />
             </div>
           </div>
         </div>
@@ -109,10 +132,28 @@ export function ProjectDetail() {
   );
 }
 
+function MostUsedTile({ label, name, count }: { label: string; name?: string; count?: number }) {
+  return (
+    <div className="bg-surface-muted rounded-lg p-3.5">
+      <div className="text-[11px] text-ink-soft mb-1">{label}</div>
+      {name ? (
+        <>
+          <div className="font-mono text-sm font-bold truncate" title={name}>
+            {name}
+          </div>
+          <div className="text-[11px] text-ink-soft mt-0.5">{fmt(count || 0)} calls</div>
+        </>
+      ) : (
+        <div className="text-sm text-ink-soft">No data yet</div>
+      )}
+    </div>
+  );
+}
+
 function KV({ k, v }: { k: string; v: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[150px_1fr] gap-2 py-1.5 border-b border-[#eef2f6] last:border-0 text-sm">
-      <span className="text-slate-500">{k}</span>
+    <div className="grid grid-cols-[150px_1fr] gap-2 py-1.5 border-b border-line last:border-0 text-sm">
+      <span className="text-ink-soft">{k}</span>
       <span>{v}</span>
     </div>
   );
@@ -121,7 +162,7 @@ function KV({ k, v }: { k: string; v: React.ReactNode }) {
 function RequestsTab({ project }: { project: string }) {
   const { data: usage = [], loading } = useApi(() => getUsageByProject(project), [project]);
   const [selected, setSelected] = useState<UsageRow | null>(null);
-  if (loading) return <div className="p-10 text-center text-slate-500">Loading…</div>;
+  if (loading) return <div className="p-10 text-center text-ink-soft">Loading…</div>;
   return (
     <>
       <DataTable<UsageRow>
@@ -147,7 +188,7 @@ function RequestsTab({ project }: { project: string }) {
 function HotspotsTab({ attrs }: { attrs: { category: string; estimated_tokens: number; reference_count: number }[] }) {
   return (
     <div className="bg-surface border border-line rounded-lg p-4">
-      <p className="text-slate-500 text-sm mb-3">Estimated attribution; drill into request rows for exact API usage.</p>
+      <p className="text-ink-soft text-sm mb-3">Estimated attribution; drill into request rows for exact API usage.</p>
       <DataTable
         columns={[
           {
@@ -158,7 +199,7 @@ function HotspotsTab({ attrs }: { attrs: { category: string; estimated_tokens: n
                 {attributionLabel(String(v))}
                 {v === '[unattributed]' && (
                   <Tooltip label={UNATTRIBUTED_HINT}>
-                    <IconInfo className="text-slate-400" />
+                    <IconInfo className="text-ink-soft" />
                   </Tooltip>
                 )}
               </span>
@@ -176,7 +217,7 @@ function HotspotsTab({ attrs }: { attrs: { category: string; estimated_tokens: n
 
 function SessionsTab({ project }: { project: string }) {
   const { data: sessions = [], loading } = useApi(() => getSessions(), []);
-  if (loading) return <div className="p-10 text-center text-slate-500">Loading…</div>;
+  if (loading) return <div className="p-10 text-center text-ink-soft">Loading…</div>;
   const scoped = sessions.filter((s) => s.project === project);
   return (
     <DataTable

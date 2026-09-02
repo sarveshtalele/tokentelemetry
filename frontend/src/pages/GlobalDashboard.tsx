@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import { useLiveData } from '../hooks/useLiveData';
 import { getProjects } from '../api/projects';
@@ -8,12 +8,15 @@ import { StatRow } from '../components/data/StatRow';
 import { DataTable } from '../components/data/DataTable';
 import { TokenTrendChart } from '../components/charts/TokenTrendChart';
 import { TokenBarChart } from '../components/charts/TokenBarChart';
+import { DateRangeFilter } from '../components/filters/DateRangeFilter';
 import { fmt, ago } from '../lib/format';
 import { Link } from 'react-router-dom';
 
 export function GlobalDashboard() {
+  const [days, setDays] = useState('0');
+  const rangeLabel = days === '0' ? 'all time' : `${days}d`;
   const { data: projects = [], loading: loadingProjects, error: errProjects } = useApi(() => getProjects(), []);
-  const { data: timeline = [], loading: loadingTimeline, error: errTimeline } = useApi(() => getUsageTimeline(30), []);
+  const { data: timeline = [], loading: loadingTimeline, error: errTimeline } = useApi(() => getUsageTimeline(Number(days)), [days]);
   const { data: clients = [] } = useApi(() => getClients(), []);
   const live = useLiveData();
 
@@ -29,7 +32,7 @@ export function GlobalDashboard() {
 
   const error = errProjects || errTimeline;
   if (error) return <ErrorPanel message={error.message} />;
-  if (loadingProjects || loadingTimeline) return <div className="p-10 text-center text-slate-500">Loading overview…</div>;
+  if (loadingProjects || loadingTimeline) return <div className="p-10 text-center text-ink-soft">Loading overview…</div>;
 
   const liveTotal = live.total_tokens as number | undefined;
   const topClient = clients[0];
@@ -40,12 +43,13 @@ export function GlobalDashboard() {
         eyebrow="Command center"
         title="Usage overview"
         subtitle="Global Claude Code telemetry across projects, sessions, clients, tools and skills."
+        actions={<DateRangeFilter value={days} onChange={setDays} />}
       />
 
       <StatRow
         columns={4}
         stats={[
-          { label: 'Total tokens (30d)', value: fmt(liveTotal ?? totals.totalTokens) },
+          { label: `Total tokens (${rangeLabel})`, value: fmt(liveTotal ?? totals.totalTokens) },
           { label: 'Input tokens', value: fmt(totals.input) },
           { label: 'Output tokens', value: fmt(totals.output) },
           { label: 'Cache read', value: fmt(totals.cacheRead) },
@@ -53,7 +57,7 @@ export function GlobalDashboard() {
       />
 
       <div className="grid grid-cols-[1.35fr_.65fr] gap-4">
-        <TokenTrendChart data={timeline.map((d) => ({ day: d.day, tokens: d.tokens }))} title="Token consumption (30d)" />
+        <TokenTrendChart data={timeline.map((d) => ({ day: d.day, tokens: d.tokens }))} title={`Token consumption (${rangeLabel})`} />
         <div className="bg-surface border border-line rounded-lg p-4">
           <h3 className="text-sm font-bold mb-4">Token mix</h3>
           {[
@@ -70,7 +74,7 @@ export function GlobalDashboard() {
                   <span>{label}</span>
                   <b>{fmt(val as number)}</b>
                 </div>
-                <div className="h-1.5 rounded-full bg-slate-200 mt-1.5 overflow-hidden">
+                <div className="h-1.5 rounded-full bg-line mt-1.5 overflow-hidden">
                   <div className="h-full bg-accent rounded-full" style={{ width: `${pct}%` }} />
                 </div>
               </div>
@@ -82,7 +86,7 @@ export function GlobalDashboard() {
       <StatRow
         columns={4}
         stats={[
-          { label: 'Requests (30d)', value: fmt(totals.totalRequests) },
+          { label: 'Requests (all time)', value: fmt(totals.totalRequests) },
           { label: 'Projects', value: fmt(projects.length) },
           { label: 'Top client', value: topClient ? topClient.client : '—' },
           {
@@ -130,7 +134,7 @@ export function PageHead({ eyebrow, title, subtitle, actions }: { eyebrow: strin
 
 export function ErrorPanel({ message }: { message: string }) {
   return (
-    <div className="p-10 text-center text-slate-500 bg-surface border border-line rounded-lg">
+    <div className="p-10 text-center text-ink-soft bg-surface border border-line rounded-lg">
       Could not reach the telemetry backend at <span className="font-mono">/api/v1</span>.
       <br />
       <span className="font-mono text-xs">{message}</span>

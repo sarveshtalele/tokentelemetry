@@ -59,6 +59,44 @@ async def get_project_hotspots(project: str):
     return {"data": [dict(r) for r in rows]}
 
 
+@router.get("/{project}/attribution-summary")
+async def get_project_attribution_summary(project: str):
+    conn = connect()
+    top_skill = conn.execute(
+        """
+        SELECT skill_name, COUNT(*) as call_count
+        FROM skill_events WHERE project=? AND skill_name IS NOT NULL AND skill_name != ''
+        GROUP BY skill_name ORDER BY call_count DESC LIMIT 1
+        """,
+        (project,),
+    ).fetchone()
+    top_mcp = conn.execute(
+        """
+        SELECT tool_name as server_name, COUNT(*) as call_count
+        FROM events WHERE project=? AND (tool_name LIKE 'mcp_%' OR event_type LIKE '%mcp%')
+        GROUP BY tool_name ORDER BY call_count DESC LIMIT 1
+        """,
+        (project,),
+    ).fetchone()
+    top_hook = conn.execute(
+        """
+        SELECT event_type as hook_name, COUNT(*) as call_count
+        FROM events
+        WHERE project=? AND event_type IN ('SessionStart','UserPromptSubmit','PreToolUse','PostToolUse','Stop')
+        GROUP BY event_type ORDER BY call_count DESC LIMIT 1
+        """,
+        (project,),
+    ).fetchone()
+    conn.close()
+    return {
+        "data": {
+            "top_skill": dict(top_skill) if top_skill else None,
+            "top_mcp_server": dict(top_mcp) if top_mcp else None,
+            "top_hook": dict(top_hook) if top_hook else None,
+        }
+    }
+
+
 @router.get("/{project}/paths")
 async def get_project_paths(project: str):
     conn = connect()

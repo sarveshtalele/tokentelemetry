@@ -41,12 +41,12 @@ export function DataTable<T extends object>({ columns, data, onRowClick, emptyLa
     <div className="bg-surface border border-line rounded-lg overflow-x-auto">
       <table className="w-full text-sm border-collapse">
         <thead>
-          <tr className="border-b border-line bg-[#fbfcfe]">
+          <tr className="border-b border-line bg-surface-muted">
             {columns.map((c, ci) => (
               <th
                 key={`${c.key}-${ci}`}
                 onClick={() => c.sortable && toggle(c.key)}
-                className={`px-4 py-3 text-[11px] uppercase tracking-wide font-bold text-slate-500 whitespace-nowrap ${
+                className={`px-4 py-3 text-[11px] uppercase tracking-wide font-bold text-ink-soft whitespace-nowrap ${
                   c.align === 'right' ? 'text-right' : 'text-left'
                 } ${c.sortable ? 'cursor-pointer select-none hover:text-ink' : ''}`}
               >
@@ -59,7 +59,7 @@ export function DataTable<T extends object>({ columns, data, onRowClick, emptyLa
         <tbody>
           {sorted.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="p-10 text-center text-slate-500">
+              <td colSpan={columns.length} className="p-10 text-center text-ink-soft">
                 {emptyLabel}
               </td>
             </tr>
@@ -68,7 +68,7 @@ export function DataTable<T extends object>({ columns, data, onRowClick, emptyLa
               <tr
                 key={i}
                 onClick={() => onRowClick?.(row)}
-                className={`border-b border-line last:border-0 ${onRowClick ? 'cursor-pointer hover:bg-[#fafbff]' : ''}`}
+                className={`border-b border-line last:border-0 ${onRowClick ? 'cursor-pointer hover:bg-surface-muted' : ''}`}
               >
                 {columns.map((c, ci) => (
                   <td key={`${c.key}-${ci}`} className={`px-4 py-2.5 text-ink whitespace-nowrap ${c.align === 'right' ? 'text-right font-mono text-xs' : ''}`}>

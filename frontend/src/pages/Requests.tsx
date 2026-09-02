@@ -59,12 +59,12 @@ export function Requests() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search project, model, client…"
-          className="h-10 border border-line bg-white rounded-md px-3 text-sm min-w-[260px] flex-1 outline-none focus:border-accent focus:ring-4 focus:ring-accent-soft"
+          className="h-10 border border-line bg-surface rounded-md px-3 text-sm min-w-[260px] flex-1 outline-none focus:border-accent focus:ring-4 focus:ring-accent-soft"
         />
         <ProjectFilter projects={projects.map((p) => p.project)} value={project} onChange={(v) => { setProject(v); setPage(1); }} />
       </div>
       {loading ? (
-        <div className="p-10 text-center text-slate-500">Loading requests…</div>
+        <div className="p-10 text-center text-ink-soft">Loading requests…</div>
       ) : (
         <DataTable<UsageRow>
           onRowClick={(row) => setSelected(row)}
@@ -98,10 +98,18 @@ export function Requests() {
 export function RequestDetail({ row }: { row: UsageRow }) {
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-2 flex-wrap">
-        <Badge tone="accent">{row.model || '—'}</Badge>
-        <Badge>{row.client || '—'}</Badge>
-        <span className="text-ink-soft text-xs">{ago(row.event_time)}</span>
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge tone="accent">{row.model || '—'}</Badge>
+          <Badge>{row.client || '—'}</Badge>
+          <span className="text-ink-soft text-xs">{ago(row.event_time)}</span>
+        </div>
+        <button
+          onClick={() => window.open(`/requests/${row.id}`, '_blank', 'noopener')}
+          className="text-xs font-semibold text-accent-strong hover:underline whitespace-nowrap"
+        >
+          Open full prompt &amp; response ↗
+        </button>
       </div>
       <div className="text-lg font-bold">{row.project || '—'}</div>
 
@@ -113,7 +121,7 @@ export function RequestDetail({ row }: { row: UsageRow }) {
       </div>
 
       <div>
-        <div className="text-[11px] uppercase tracking-wide font-bold text-slate-500 mb-2">Session</div>
+        <div className="text-[11px] uppercase tracking-wide font-bold text-ink-soft mb-2">Session</div>
         <KV k="Session id" v={<span className="font-mono text-xs">{row.session_id}</span>} />
         <KV k="Total tokens" v={fmt(row.total_tokens)} />
         <KV k="Context window" v={row.context_window ? fmt(row.context_window) : '—'} />
@@ -121,19 +129,19 @@ export function RequestDetail({ row }: { row: UsageRow }) {
       </div>
 
       <div>
-        <div className="text-[11px] uppercase tracking-wide font-bold text-slate-500 mb-2">Prompt preview</div>
+        <div className="text-[11px] uppercase tracking-wide font-bold text-ink-soft mb-2">Prompt preview</div>
         <p className="text-ink-soft text-xs mb-2">
           Truncated preview stored at collection time (up to 800 characters) — not the full transcript.
         </p>
-        <pre className="bg-[#0b1220] text-slate-300 rounded-lg p-3.5 text-xs whitespace-pre-wrap break-words leading-relaxed max-h-72 overflow-y-auto">
+        <pre className="bg-surface-code text-slate-300 rounded-lg p-3.5 text-xs whitespace-pre-wrap break-words leading-relaxed max-h-72 overflow-y-auto">
           {row.prompt_preview || '(no prompt preview captured)'}
         </pre>
       </div>
 
       <div>
-        <div className="text-[11px] uppercase tracking-wide font-bold text-slate-500 mb-2">Response preview</div>
+        <div className="text-[11px] uppercase tracking-wide font-bold text-ink-soft mb-2">Response preview</div>
         <p className="text-ink-soft text-xs mb-2">Truncated preview (up to 1200 characters) — not the full response.</p>
-        <pre className="bg-[#0b1220] text-slate-300 rounded-lg p-3.5 text-xs whitespace-pre-wrap break-words leading-relaxed max-h-72 overflow-y-auto">
+        <pre className="bg-surface-code text-slate-300 rounded-lg p-3.5 text-xs whitespace-pre-wrap break-words leading-relaxed max-h-72 overflow-y-auto">
           {row.response_preview || '(no response preview captured)'}
         </pre>
       </div>
@@ -144,7 +152,7 @@ export function RequestDetail({ row }: { row: UsageRow }) {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-surface-muted rounded-lg p-3">
-      <div className="text-[11px] text-slate-500">{label}</div>
+      <div className="text-[11px] text-ink-soft">{label}</div>
       <div className="font-bold text-base">{value}</div>
     </div>
   );
@@ -152,8 +160,8 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 function KV({ k, v }: { k: string; v: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[130px_1fr] gap-2 py-1.5 border-b border-[#eef2f6] last:border-0 text-sm">
-      <span className="text-slate-500">{k}</span>
+    <div className="grid grid-cols-[130px_1fr] gap-2 py-1.5 border-b border-line last:border-0 text-sm">
+      <span className="text-ink-soft">{k}</span>
       <span>{v}</span>
     </div>
   );

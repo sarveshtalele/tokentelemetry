@@ -8,7 +8,7 @@ import { PageHead, ErrorPanel } from './GlobalDashboard';
 export function Settings() {
   const { data: s, loading, error, reload } = useApi(() => getSettings(), []);
   if (error) return <ErrorPanel message={error.message} />;
-  if (loading || !s) return <div className="p-10 text-center text-slate-500">Loading settings…</div>;
+  if (loading || !s) return <div className="p-10 text-center text-ink-soft">Loading settings…</div>;
 
   const handleReconcile = async () => {
     await triggerReconcile();
@@ -47,7 +47,7 @@ export function Settings() {
         <div className="grid grid-cols-3 gap-3">
           {Object.entries(s.table_counts).map(([k, v]) => (
             <div key={k} className="bg-surface-muted rounded-lg p-3.5">
-              <div className="text-slate-500 text-[11px]">{k}</div>
+              <div className="text-ink-soft text-[11px]">{k}</div>
               <div className="font-extrabold text-lg">{fmt(v)}</div>
             </div>
           ))}
@@ -59,8 +59,8 @@ export function Settings() {
 
 function KV({ k, v }: { k: string; v: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[150px_1fr] gap-2 py-1.5 border-b border-[#eef2f6] last:border-0 text-sm">
-      <span className="text-slate-500">{k}</span>
+    <div className="grid grid-cols-[150px_1fr] gap-2 py-1.5 border-b border-line last:border-0 text-sm">
+      <span className="text-ink-soft">{k}</span>
       <span>{v}</span>
     </div>
   );

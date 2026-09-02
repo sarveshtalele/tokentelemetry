@@ -23,7 +23,7 @@ export function Sessions() {
   );
 
   if (error) return <ErrorPanel message={error.message} />;
-  if (loading) return <div className="p-10 text-center text-slate-500">Loading sessions…</div>;
+  if (loading) return <div className="p-10 text-center text-ink-soft">Loading sessions…</div>;
 
   return (
     <div className="space-y-6">
@@ -34,7 +34,7 @@ export function Sessions() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search session…"
-          className="h-10 border border-line bg-white rounded-md px-3 text-sm min-w-[240px] flex-1 outline-none focus:border-accent focus:ring-4 focus:ring-accent-soft"
+          className="h-10 border border-line bg-surface rounded-md px-3 text-sm min-w-[240px] flex-1 outline-none focus:border-accent focus:ring-4 focus:ring-accent-soft"
         />
       </div>
       <DataTable<SessionRow>

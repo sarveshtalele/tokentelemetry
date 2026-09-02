@@ -24,7 +24,7 @@ export function McpPlugins() {
 
       {tab === 'MCP servers' &&
         (loadingMcp ? (
-          <div className="p-10 text-center text-slate-500">Loading…</div>
+          <div className="p-10 text-center text-ink-soft">Loading…</div>
         ) : (
           <DataTable
             columns={[
@@ -40,7 +40,7 @@ export function McpPlugins() {
 
       {tab === 'Plugins & hooks' &&
         (loadingPlugins ? (
-          <div className="p-10 text-center text-slate-500">Loading…</div>
+          <div className="p-10 text-center text-ink-soft">Loading…</div>
         ) : (
           <div className="space-y-6">
             <div className="bg-surface border border-line rounded-lg overflow-hidden">

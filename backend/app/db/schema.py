@@ -82,5 +82,7 @@ def add_migrations(conn):
     _add_column(conn, "usage", "provider", "TEXT")
     _add_column(conn, "usage", "context_window", "INTEGER DEFAULT 0")
     _add_column(conn, "usage", "max_output_tokens", "INTEGER DEFAULT 0")
+    _add_column(conn, "usage", "prompt_full", "TEXT")
+    _add_column(conn, "usage", "response_full", "TEXT")
     _add_column(conn, "attributions", "project", "TEXT")
     conn.commit()

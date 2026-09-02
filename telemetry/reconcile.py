@@ -56,14 +56,16 @@ def ingest_transcript(conn, path):
                 """INSERT OR IGNORE INTO usage(
                     event_time,session_id,project,cwd,client,model,provider,transcript_path,
                     transcript_line,input_tokens,output_tokens,cache_read_tokens,cache_write_tokens,
-                    total_tokens,cost_usd,context_window,max_output_tokens,prompt_preview,response_preview
-                ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                    total_tokens,cost_usd,context_window,max_output_tokens,prompt_preview,response_preview,
+                    prompt_full,response_full
+                ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     timestamp, session_id, pname, cwd, client, usage["model"], usage["provider"],
                     str(path), idx, usage["input_tokens"], usage["output_tokens"],
                     usage["cache_read_tokens"], usage["cache_write_tokens"], usage["total_tokens"],
                     usage["cost_usd"], usage["context_window"], usage["max_output_tokens"],
-                    previous_user[:800], text[:1200]
+                    previous_user[:800], text[:1200],
+                    previous_user, text
                 )
             )
             row = conn.execute(
