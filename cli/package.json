@@ -1,6 +1,6 @@
 {
   "name": "tokentelemetry",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Install and run the Claude Telemetry Enterprise console (local FastAPI backend + React dashboard, with Claude Code hook wiring) as a global tool on Windows, macOS, and Linux.",
   "bin": {
     "tokentelemetry": "bin/tokentelemetry.js"
