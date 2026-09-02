@@ -111,7 +111,7 @@ async function interactiveLoop() {
     try {
       switch (choice) {
         case '1':
-          start();
+          await start();
           break;
         case '2':
           stop();
@@ -171,7 +171,7 @@ async function main() {
       await fullSetup();
       break;
     case 'start':
-      start();
+      await start();
       break;
     case 'stop':
       stop();

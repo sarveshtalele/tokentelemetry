@@ -107,7 +107,10 @@ That single command:
      5) Exit
    ```
 
-Pick **1**, then open **http://127.0.0.1:5173**.
+Pick **1** — your browser opens to **http://127.0.0.1:5173** automatically once the
+dashboard is actually up (set `TOKENTELEMETRY_NO_OPEN=1` to skip that). If something fails
+to start (e.g. the port's already taken by something else), `start` says exactly what and
+where to look — it doesn't just claim success.
 
 Requires Node.js 18+ and Python 3.9+ on `PATH` — or [`uv`](https://docs.astral.sh/uv/), which
 is used automatically when present (faster env setup). `cli/setup.js` checks for these up

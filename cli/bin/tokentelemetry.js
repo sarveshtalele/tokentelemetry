@@ -30,7 +30,7 @@ async function main() {
       install();
       break;
     case 'start':
-      start();
+      await start();
       break;
     case 'stop':
       stop();
@@ -61,7 +61,7 @@ async function main() {
       break;
     case 'default':
       install();
-      start();
+      await start();
       break;
     case '-h':
     case '--help':
