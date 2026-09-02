@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-import json, os, sys
+import json
+import os
+import sys
 from pathlib import Path
 from telemetry.db import connect
 from telemetry.common import first, detect_client, project_name

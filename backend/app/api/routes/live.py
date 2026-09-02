@@ -13,7 +13,6 @@ async def websocket_live(websocket: WebSocket):
     connected_clients.add(websocket)
     try:
         last_total = 0
-        last_time = ""
         while True:
             conn = connect()
             row = conn.execute(
@@ -25,7 +24,6 @@ async def websocket_live(websocket: WebSocket):
             current_time = row[1] or ""
             if total != last_total:
                 last_total = total
-                last_time = current_time
                 payload = json.dumps({
                     "type": "metrics",
                     "data": {"total_tokens": total},

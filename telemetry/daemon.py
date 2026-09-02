@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import os, time
+import os
+import time
 from telemetry.reconcile import reconcile
 
 INTERVAL = max(2, int(os.environ.get("CLAUDE_TELEMETRY_INTERVAL", "5")))

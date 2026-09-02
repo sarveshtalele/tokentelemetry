@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import json, os
+import json
+import os
 from pathlib import Path
 
 from telemetry.db import connect
@@ -50,7 +51,6 @@ def ingest_transcript(conn, path):
         if role == "user" and text:
             previous_user = text[:12000]
 
-        usage_id = None
         if role == "assistant" and usage["total_tokens"] > 0:
             conn.execute(
                 """INSERT OR IGNORE INTO usage(
@@ -68,12 +68,6 @@ def ingest_transcript(conn, path):
                     previous_user, text
                 )
             )
-            row = conn.execute(
-                "SELECT id FROM usage WHERE transcript_path=? AND transcript_line=?",
-                (str(path), idx)
-            ).fetchone()
-            usage_id = row[0] if row else None
-
         blocks = content if isinstance(content, list) else []
         for b in blocks:
             if not isinstance(b, dict) or b.get("type") != "tool_use":
