@@ -1,37 +1,52 @@
-# Claude Telemetry Enterprise
+<div align="center">
 
-**Local-first observability for [Claude Code](https://claude.com/claude-code).** Exact
-per-request token usage plus estimated tool/file/skill attribution — projects, sessions,
-tools, skills, MCP servers, and clients — in one dashboard that never leaves your machine.
+# 📡⚡ Claude Telemetry Enterprise
 
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Node](https://img.shields.io/badge/node-%E2%89%A518-339933?logo=node.js&logoColor=white)](https://nodejs.org)
-[![Python](https://img.shields.io/badge/python-%E2%89%A53.9-3776AB?logo=python&logoColor=white)](https://www.python.org)
-[![React](https://img.shields.io/badge/frontend-React%20%2B%20Vite%20%2B%20TypeScript-61DAFB?logo=react&logoColor=white)](frontend)
-[![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi&logoColor=white)](backend)
-[![Local-first](https://img.shields.io/badge/data-local--first%20SQLite-brightgreen)](#how-data-collection-works)
+### *The local-first token, tool, skill & MCP observability console for Claude Code*
+
+<p>
+  <img src="https://img.shields.io/badge/Data-100%25%20Local--first-brightgreen" alt="Local-first">
+  <img src="https://img.shields.io/badge/Attribution-Exact%20%2B%20Estimated%2C%20Always%20Labeled-blue" alt="Attribution">
+  <img src="https://img.shields.io/badge/Tracks-Tokens%20%C2%B7%20Tools%20%C2%B7%20Skills%20%C2%B7%20MCP%20%C2%B7%20Hooks-blueviolet" alt="Tracks">
+  <img src="https://img.shields.io/badge/Clients-Claude%20Code%20%C2%B7%20Cursor%20%C2%B7%20VS%20Code%20%C2%B7%20JetBrains%20%C2%B7%20Windsurf-purple" alt="Clients">
+</p>
+<p>
+  <img src="https://img.shields.io/badge/Node-%E2%89%A518-339933?logo=node.js&logoColor=white" alt="Node">
+  <img src="https://img.shields.io/badge/Python-%E2%89%A53.9-3776AB?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Frontend-React%20%2B%20Vite%20%2B%20TypeScript-61DAFB?logo=react&logoColor=white" alt="React">
+  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
+</p>
+
+Installs as a single **`tokentelemetry`** command · works with **Claude Code** sessions from the
+terminal, **Cursor**, **VS Code**, **JetBrains**, and **Windsurf** — auto-classified, zero
+configuration.
+
+</div>
+
+---
 
 <p align="center">
   <img src="docs/screenshots/dashboard-dark.png" alt="Usage overview dashboard, dark mode" width="100%">
 </p>
 
-## Contents
+## 📋 Table of Contents
 
-- [Why](#why)
-- [Features](#features)
-- [Quick start](#quick-start-install-locally)
-- [Running it every time](#running-it-every-time)
-- [How data collection works](#how-data-collection-works)
-- [Architecture](#architecture)
-- [Configuration](#configuration)
-- [Manual / development setup](#manual--development-setup)
-- [Project structure](#project-structure)
-- [Testing](#testing)
-- [Design system](#design-system)
-- [Contributing](#contributing)
-- [License](#license)
+1. [❓ Why](#why)
+2. [✨ Features](#features)
+3. [🚀 Quick Start (Install Locally)](#quick-start-install-locally)
+4. [🔁 Running It Every Time](#running-it-every-time)
+5. [🗄️ How Data Collection Works](#how-data-collection-works)
+6. [🏗️ Architecture](#architecture)
+7. [⚙️ Configuration](#configuration)
+8. [🛠️ Manual / Development Setup](#manual--development-setup)
+9. [📁 Project Structure](#project-structure)
+10. [🧪 Testing](#testing)
+11. [🎨 Design System](#design-system)
+12. [🤝 Contributing](#contributing)
+13. [📜 License](#license)
 
-## Why
+## ❓ Why
 
 Claude Code doesn't ship a way to see, across every project you use it in: how many tokens
 you're actually spending, which tools and skills drive that spend, which MCP servers and
@@ -39,7 +54,7 @@ hooks are active, and where the context is going. This fills that gap — entire
 own machine, against your own Claude Code session data, with no telemetry of its own sent
 anywhere.
 
-## Features
+## ✨ Features
 
 - **Exact vs. estimated, always labeled.** Token counts come straight from the Claude API.
   Per-file/tool attribution is a clearly-badged heuristic — see the in-app **About** page
@@ -64,7 +79,7 @@ anywhere.
   <img src="docs/screenshots/project-detail-dark.png" alt="Project detail view showing per-project skill and MCP usage" width="100%">
 </p>
 
-## Quick start (install locally)
+## 🚀 Quick Start (Install Locally)
 
 `tokentelemetry` isn't published to the npm registry, so there's no bare `npx tokentelemetry`
 to run from just anywhere yet. Instead, clone this repo and run the one-shot setup script —
@@ -123,7 +138,7 @@ Only bare `node cli/setup.js` (or `node cli/setup.js install`) does the full bui
 
 Full details: [`cli/README.md`](cli/README.md).
 
-## Running it every time
+## 🔁 Running It Every Time
 
 `tokentelemetry start` doesn't survive a reboot by itself — it just launches three
 background processes. Two ways to keep it running:
@@ -170,7 +185,7 @@ To undo: delete the task from Task Scheduler, or run:
 **macOS / Linux:** run `tokentelemetry status` for the equivalent `launchd`
 (`~/Library/LaunchAgents`) / `systemd --user` command and working directory to wire up.
 
-## How data collection works
+## 🗄️ How Data Collection Works
 
 Data capture does **not** depend on `tokentelemetry start` being on:
 
@@ -184,7 +199,7 @@ Data capture does **not** depend on `tokentelemetry start` being on:
    file's mtime/size, so turning the daemon off for a while and back on backfills everything
    it missed, nothing is lost.
 
-## Architecture
+## 🏗️ Architecture
 
 ```
 Claude Code
@@ -207,7 +222,7 @@ instant they happen, and **reconcile** backfills exact token usage and full tran
 Claude Code's own session files — so nothing depends on the dashboard being open, and nothing
 is lost if the daemon was off for a while.
 
-## Configuration
+## ⚙️ Configuration
 
 All optional; sensible defaults apply if unset.
 
@@ -219,7 +234,7 @@ All optional; sensible defaults apply if unset.
 | `CLAUDE_TELEMETRY_INTERVAL` | `5` | Daemon poll interval, in seconds |
 | `CLAUDE_TELEMETRY_FORCE_RECONCILE` | unset | Set to `1`/`true` to force a full re-parse of every transcript on the next reconcile |
 
-## Manual / development setup
+## 🛠️ Manual / Development Setup
 
 If you're working on the app itself rather than just running it, skip the CLI and run the
 pieces directly:
@@ -241,7 +256,7 @@ browser blocks the cross-origin API fetch; always serve it (`npm run dev`, or th
   `/mcp-plugins` — telemetry breakdowns · `/settings` — collector/data semantics ·
   `/about` — what "estimated attribution" means and what this tool tracks
 
-## Project structure
+## 📁 Project Structure
 
 ```
 .
@@ -264,7 +279,7 @@ browser blocks the cross-origin API fetch; always serve it (`npm run dev`, or th
 └── DESIGN.md            Design tokens + rationale (Google Labs DESIGN.md format)
 ```
 
-## Testing
+## 🧪 Testing
 
 ```bash
 uv venv .venv && uv pip install -p .venv -r backend/requirements-dev.txt   # or plain venv/pip
@@ -275,13 +290,13 @@ uv venv .venv && uv pip install -p .venv -r backend/requirements-dev.txt   # or 
 (`app.py`) and requires `pytest-playwright` plus a running Streamlit instance — it's not part
 of the primary React app's test path.
 
-## Design system
+## 🎨 Design System
 
 `DESIGN.md` follows the Google Labs DESIGN.md format: YAML design tokens plus ordered
 rationale sections, including light/dark theming rules and the exact-vs-estimated labeling
 convention. Source specification: https://github.com/google-labs-code/design.md
 
-## Contributing
+## 🤝 Contributing
 
 Issues and PRs are welcome. Before opening one:
 
@@ -294,6 +309,6 @@ Issues and PRs are welcome. Before opening one:
   daemon connect through them separately) and need to stay in sync; see the comments in
   either file for why.
 
-## License
+## 📜 License
 
 [MIT](LICENSE) — see the [`LICENSE`](LICENSE) file for the full text.
