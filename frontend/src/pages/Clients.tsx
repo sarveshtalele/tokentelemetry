@@ -19,10 +19,26 @@ export function Clients() {
       <PageHead eyebrow="Environment intelligence" title="Clients & IDEs" subtitle="Best-effort client classification across Claude Code sessions." />
       <StatRow
         stats={[
-          { label: 'Known clients', value: fmt(clients.length) },
-          { label: 'Top client', value: clients[0]?.client || '—' },
-          { label: 'Total tokens', value: fmt(totalTokens) },
-          { label: 'Total requests', value: fmt(clients.reduce((a, c) => a + (c.requests || 0), 0)) },
+          {
+            label: 'Known clients',
+            value: fmt(clients.length),
+            hint: 'Number of distinct IDE/CLI clients detected in telemetry (e.g. Claude Code Terminal, Cursor, VS Code).',
+          },
+          {
+            label: 'Top client',
+            value: clients[0]?.client || '—',
+            hint: 'The client with the most total tokens recorded, all-time.',
+          },
+          {
+            label: 'Total tokens',
+            value: fmt(totalTokens),
+            hint: 'Sum of tokens across all known clients, all-time — exact API usage.',
+          },
+          {
+            label: 'Total requests',
+            value: fmt(clients.reduce((a, c) => a + (c.requests || 0), 0)),
+            hint: 'Sum of requests across all known clients, all-time.',
+          },
         ]}
       />
       {clients.length > 0 && <TokenBarChart data={clients.map((c) => ({ project: c.client, total_tokens: c.total_tokens }))} title="Client mix" />}

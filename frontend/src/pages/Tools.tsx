@@ -19,11 +19,16 @@ export function Tools() {
       <PageHead eyebrow="Tool telemetry" title="Tools" subtitle="Understand which Claude Code tools drive context growth and execution volume." />
       <StatRow
         stats={[
-          { label: 'Tool calls', value: fmt(totalCalls) },
+          {
+            label: 'Tool calls',
+            value: fmt(totalCalls),
+            hint: 'Total number of tool invocations recorded across all projects and sessions, all-time.',
+          },
           ...tools.slice(0, 3).map((t) => ({
             label: t.tool_name,
             value: fmt(t.call_count),
             delta: totalCalls ? `${Math.round((t.call_count / totalCalls) * 100)}% of calls` : undefined,
+            hint: `Calls to the "${t.tool_name}" tool, all-time. The percentage is its share of total tool calls.`,
           })),
         ]}
       />

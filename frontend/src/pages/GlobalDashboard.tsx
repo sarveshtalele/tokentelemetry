@@ -49,10 +49,26 @@ export function GlobalDashboard() {
       <StatRow
         columns={4}
         stats={[
-          { label: `Total tokens (${rangeLabel})`, value: fmt(liveTotal ?? totals.totalTokens) },
-          { label: 'Input tokens', value: fmt(totals.input) },
-          { label: 'Output tokens', value: fmt(totals.output) },
-          { label: 'Cache read', value: fmt(totals.cacheRead) },
+          {
+            label: `Total tokens (${rangeLabel})`,
+            value: fmt(liveTotal ?? totals.totalTokens),
+            hint: 'Input + output + cache read + cache write tokens across all requests in the selected date range. Exact figures reported by the Claude API, not estimates.',
+          },
+          {
+            label: 'Input tokens',
+            value: fmt(totals.input),
+            hint: 'Tokens sent to Claude as part of the prompt and context, in the selected range.',
+          },
+          {
+            label: 'Output tokens',
+            value: fmt(totals.output),
+            hint: 'Tokens Claude generated in its responses, in the selected range.',
+          },
+          {
+            label: 'Cache read',
+            value: fmt(totals.cacheRead),
+            hint: "Tokens served from Claude's prompt cache instead of being reprocessed from scratch — cheaper than a fresh input token, and tracked separately from Input above.",
+          },
         ]}
       />
 
@@ -86,12 +102,21 @@ export function GlobalDashboard() {
       <StatRow
         columns={4}
         stats={[
-          { label: 'Requests (all time)', value: fmt(totals.totalRequests) },
-          { label: 'Projects', value: fmt(projects.length) },
-          { label: 'Top client', value: topClient ? topClient.client : '—' },
+          {
+            label: 'Requests (all time)',
+            value: fmt(totals.totalRequests),
+            hint: 'Total Claude API requests recorded across every project, always all-time — independent of the date range selected above.',
+          },
+          { label: 'Projects', value: fmt(projects.length), hint: 'Number of distinct projects with recorded telemetry.' },
+          {
+            label: 'Top client',
+            value: topClient ? topClient.client : '—',
+            hint: 'The IDE/CLI client that has sent the most requests, all-time.',
+          },
           {
             label: 'Avg tokens/req',
             value: totals.totalRequests > 0 ? fmt(Math.round(totals.totalTokens / totals.totalRequests)) : '—',
+            hint: 'Total tokens (selected range) divided by total requests (all-time) — a rough per-request average, not an exact ratio for the same window.',
           },
         ]}
       />

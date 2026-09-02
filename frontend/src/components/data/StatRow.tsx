@@ -4,6 +4,7 @@ interface Stat {
   label: string;
   value: string;
   delta?: string;
+  hint?: string;
 }
 
 export function StatRow({ stats, columns = 4 }: { stats: Stat[]; columns?: number }) {

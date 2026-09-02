@@ -38,9 +38,17 @@ export function Skills() {
       <StatRow
         columns={3}
         stats={[
-          { label: 'Skill activations', value: fmt(totalCalls) },
-          { label: 'Unique skills', value: fmt(skills.length) },
-          { label: 'Last activated', value: skills[0] ? ago(skills[0].last_activated) : '—' },
+          {
+            label: 'Skill activations',
+            value: fmt(totalCalls),
+            hint: 'Total number of times any Skill has been invoked, across all recorded activity.',
+          },
+          { label: 'Unique skills', value: fmt(skills.length), hint: 'Number of distinct Skills that have been activated at least once.' },
+          {
+            label: 'Last activated',
+            value: skills[0] ? ago(skills[0].last_activated) : '—',
+            hint: 'How long ago the most recently used Skill was invoked (the table below is sorted by activation count, not recency).',
+          },
         ]}
       />
       {triggerDist.length > 0 && <CategoryPieChart data={triggerDist} title="Trigger type distribution" />}

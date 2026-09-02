@@ -48,10 +48,22 @@ export function Requests() {
       />
       <StatRow
         stats={[
-          { label: 'Requests (page)', value: fmt(usage.length) },
-          { label: 'Avg request', value: usage.length ? fmt(Math.round(totalTokens / usage.length)) : '—' },
-          { label: 'Cache read (page)', value: fmt(cacheRead) },
-          { label: 'Page', value: String(page) },
+          {
+            label: 'Requests (page)',
+            value: fmt(usage.length),
+            hint: 'Number of requests shown on this page of results (up to 100), not the total across all pages.',
+          },
+          {
+            label: 'Avg request',
+            value: usage.length ? fmt(Math.round(totalTokens / usage.length)) : '—',
+            hint: 'Average total tokens per request, for the requests on this page only.',
+          },
+          {
+            label: 'Cache read (page)',
+            value: fmt(cacheRead),
+            hint: 'Total cache-read tokens across the requests on this page — tokens served from cache instead of reprocessed.',
+          },
+          { label: 'Page', value: String(page), hint: 'The current page number. Use the Prev/Next buttons below to move through pages of 100.' },
         ]}
       />
       <div className="flex gap-2 flex-wrap">

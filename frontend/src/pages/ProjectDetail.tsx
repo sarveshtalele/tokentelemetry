@@ -55,10 +55,18 @@ export function ProjectDetail() {
         <div className="space-y-6">
           <StatRow
             stats={[
-              { label: 'Tokens', value: fmt(project.total_tokens) },
-              { label: 'Requests', value: fmt(project.requests) },
-              { label: 'Sessions', value: fmt(project.sessions) },
-              { label: 'Health', value: `${health}%` },
+              {
+                label: 'Tokens',
+                value: fmt(project.total_tokens),
+                hint: 'Total tokens (input + output + cache read + cache write) recorded for this project, all-time — exact API usage.',
+              },
+              { label: 'Requests', value: fmt(project.requests), hint: 'Total Claude API requests recorded for this project, all-time.' },
+              { label: 'Sessions', value: fmt(project.sessions), hint: 'Number of distinct Claude Code sessions in this project.' },
+              {
+                label: 'Health',
+                value: `${health}%`,
+                hint: 'A recency signal, not a real health check — 98% if active in the last hour, 93% within a day, 85% within a week, 72% otherwise. Higher just means more recent activity, not more usage or fewer errors.',
+              },
             ]}
           />
           <div className="grid grid-cols-[1.35fr_.65fr] gap-4">
