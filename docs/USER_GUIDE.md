@@ -1,0 +1,158 @@
+# User Guide
+
+A page-by-page walkthrough of the dashboard: what each view shows, what
+the numbers mean, and how to get data out of the tool. For how the system
+is built, see [Architecture](ARCHITECTURE.md); for installation, see the
+main [README](../README.md#quick-start-install-locally).
+
+## Contents
+
+1. [Exact vs. estimated data](#exact-vs-estimated-data)
+2. [Dashboard](#dashboard)
+3. [Projects](#projects)
+4. [Requests](#requests)
+5. [Tools, Skills, Sessions, Clients](#tools-skills-sessions-clients)
+6. [MCP & Plugins](#mcp--plugins)
+7. [Reports (export)](#export-reports)
+8. [Settings](#settings)
+9. [About](#about)
+10. [Dark / light mode](#dark--light-mode)
+
+## Exact vs. estimated data
+
+Every number in the dashboard carries one of two labels, and the
+distinction matters:
+
+- **Exact** — read straight from the Claude API's own usage reporting for
+  that request (input/output/cache tokens, cost). Shown with a green badge.
+- **Estimated** — a heuristic. The Claude API reports token usage per
+  *request*, not per file or tool call, so anywhere you see a per-file or
+  per-tool token breakdown, that number was computed by dividing a
+  request's exact token count across the tool calls active near it in the
+  transcript, then splitting again across the file paths those tools
+  touched. A slice that can't be matched to any nearby tool call is
+  bucketed as `[unattributed]` rather than silently dropped or guessed.
+  Shown with an amber badge.
+
+Treat estimated numbers as directionally useful for finding hotspots
+(which files or tools are driving spend), not as a precise per-file cost.
+The in-app **About** page (`/about`) has the same explanation, reachable
+from anywhere in the dashboard.
+
+## Dashboard
+
+Route: `/`. The global command center — the first thing you see. Shows,
+across every project by default (not capped to 30 days — see the date
+range filter in the top bar):
+
+- Total tokens, total requests, active projects, and active sessions as
+  headline metric cards, each with an info icon explaining exactly what
+  it counts.
+- A token trend chart (tokens per day).
+- A category breakdown (input / output / cache read / cache write) as a
+  pie chart.
+- A live indicator (top right) that turns green when the WebSocket
+  connection to `/ws/live` is receiving updates — meaning the backend
+  and daemon are both running and reachable.
+
+## Projects
+
+Routes: `/projects` (inventory), `/projects/:id` (workspace). Every
+project Claude Code has been used in is its own telemetry scope, detected
+automatically from the working directory recorded in each session
+transcript — no manual configuration.
+
+The project workspace page adds a summary card showing that project's
+**top skill, top MCP server, and top hook** by call count — useful for
+answering "what is this project actually using Claude Code for" at a
+glance, without cross-referencing the Tools/Skills/MCP pages by hand.
+
+## Requests
+
+Routes: `/requests` (list), `/requests/:id` (full view). The trace
+explorer — one row per Claude API request, with exact token counts,
+model, client, and a truncated prompt/response preview. Filter by
+project, model, or client, or search.
+
+Click a row to open its full detail; from there, **Open full prompt &
+response** opens `/requests/:id` in its own page with the complete,
+untruncated prompt and response text (`prompt_full`/`response_full` in the
+database) — useful for pasting into another tool or reviewing exactly
+what was sent, without the preview's truncation.
+
+## Tools, Skills, Sessions, Clients
+
+Four dedicated breakdown views, each following the same shape (a
+distribution chart plus a sortable table):
+
+- **`/tools`** — which Claude Code tools (`Bash`, `Read`, `Edit`, `Grep`,
+  MCP tool calls, ...) are driving call volume and context growth, with
+  call counts, unique sessions, and first/last-seen timestamps.
+- **`/skills`** — skill activations, including which plugin a skill came
+  from when its identifier is namespaced (`plugin:skill`).
+- **`/sessions`** — one row per Claude Code session (a single `session_id`
+  across its lifetime), with token totals and duration.
+- **`/clients`** — which client surface requests came from (terminal
+  Claude Code, Cursor, VS Code, JetBrains, Windsurf), auto-classified from
+  transcript metadata.
+
+## MCP & Plugins
+
+Route: `/mcp-plugins`. MCP tool calls are grouped by **server** — a tool
+name like `mcp__github__search_issues` is reported as server `github`,
+not as one bucket per distinct tool — so you can see at a glance which
+MCP servers (and, separately, which installed plugins) a project actually
+exercises. This reads from the `tool_calls` table (backfilled by
+reconcile from transcripts), not just live hook events, so historical
+usage from before the hooks were installed still shows up.
+
+## Export Reports
+
+Route: `/reports`. Generates a downloadable export of the underlying
+data — for spreadsheets, BI tools, or ad hoc analysis outside the
+dashboard.
+
+**Report type:**
+- **Requests** — one row per Claude request: timestamp, project, session,
+  client, model, exact token counts, cost, and prompt/response previews.
+- **Projects** — one row per project: total tokens, request count,
+  session count, and that project's most-used tool.
+
+**Filters:** narrow by project (or "All projects") and by date range
+(all time, or the last 7/30/90/365 days) — the same filter component used
+on the Dashboard. A live preview shows the matching row count and the
+first five rows before you download anything, so you can confirm the
+filter is right.
+
+**Format:** **Download CSV** or **Download JSON** — both stream directly
+from the backend (`GET /api/v1/reports/export`) with the filter applied,
+named `tokentelemetry-<type>-<timestamp>.<format>`. Exports are capped at
+5,000 rows per request; narrow the project or date range if you need more
+than that in one file — the preview panel says so if you've hit the cap.
+
+Nothing here calls out to any external service — the export is generated
+from the local SQLite database and streamed straight to your browser's
+download.
+
+## Settings
+
+Route: `/settings`. Operational view of the collector itself: database
+path and size, poll interval, when reconcile last ran, and row counts per
+table. The **Reconcile now** button triggers an immediate transcript scan
+instead of waiting for the next poll — useful right after a long Claude
+Code session if you don't want to wait up to `CLAUDE_TELEMETRY_INTERVAL`
+seconds for it to show up.
+
+## About
+
+Route: `/about`. The in-product explanation of what this tool tracks, the
+exact-vs-estimated distinction above, and what's intentionally excluded
+(no cost/pricing columns in the primary UI, since billing depends on the
+plan in effect and isn't a reliable token-telemetry primitive).
+
+## Dark / light mode
+
+Toggle in the top bar (sun/moon icon). Defaults to your OS preference
+(`prefers-color-scheme`) on first visit, then remembers your choice in
+`localStorage` — every page, chart, and table repaints to match, not just
+the base background.

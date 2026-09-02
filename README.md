@@ -1,6 +1,6 @@
 <div align="center">
 
-# 📡⚡ Claude Telemetry Enterprise
+# Claude Telemetry Enterprise
 
 ### *The local-first token, tool, skill & MCP observability console for Claude Code*
 
@@ -26,27 +26,25 @@ configuration.
 
 ---
 
-<p align="center">
-  <img src="docs/screenshots/dashboard-dark.png" alt="Usage overview dashboard, dark mode" width="100%">
-</p>
+## Table of Contents
 
-## 📋 Table of Contents
+1. [Why](#why)
+2. [Features](#features)
+3. [Screenshots](#screenshots)
+4. [Quick Start (Install Locally)](#quick-start-install-locally)
+5. [Running It Every Time](#running-it-every-time)
+6. [How Data Collection Works](#how-data-collection-works)
+7. [Architecture](#architecture)
+8. [Documentation](#documentation)
+9. [Configuration](#configuration)
+10. [Manual / Development Setup](#manual--development-setup)
+11. [Project Structure](#project-structure)
+12. [Testing](#testing)
+13. [Design System](#design-system)
+14. [Contributing](#contributing)
+15. [License](#license)
 
-1. [❓ Why](#why)
-2. [✨ Features](#features)
-3. [🚀 Quick Start (Install Locally)](#quick-start-install-locally)
-4. [🔁 Running It Every Time](#running-it-every-time)
-5. [🗄️ How Data Collection Works](#how-data-collection-works)
-6. [🏗️ Architecture](#architecture)
-7. [⚙️ Configuration](#configuration)
-8. [🛠️ Manual / Development Setup](#manual--development-setup)
-9. [📁 Project Structure](#project-structure)
-10. [🧪 Testing](#testing)
-11. [🎨 Design System](#design-system)
-12. [🤝 Contributing](#contributing)
-13. [📜 License](#license)
-
-## ❓ Why
+## Why
 
 Claude Code doesn't ship a way to see, across every project you use it in: how many tokens
 you're actually spending, which tools and skills drive that spend, which MCP servers and
@@ -54,7 +52,7 @@ hooks are active, and where the context is going. This fills that gap — entire
 own machine, against your own Claude Code session data, with no telemetry of its own sent
 anywhere.
 
-## ✨ Features
+## Features
 
 - **Exact vs. estimated, always labeled.** Token counts come straight from the Claude API.
   Per-file/tool attribution is a clearly-badged heuristic — see the in-app **About** page
@@ -67,19 +65,56 @@ anywhere.
 - **Tools, skills, MCP servers, clients, and sessions**, each with their own dedicated view.
 - **No cost/pricing columns** in the primary UI — intentionally excluded, since billing
   depends on the plan in effect and isn't a reliable token-telemetry primitive.
+- **Report export.** Generate a CSV or JSON export of usage, tool, and attribution data for
+  any date range and project, straight from the dashboard — see
+  [Export Reports](docs/USER_GUIDE.md#export-reports) in the user guide.
+
+## Screenshots
 
 <table>
 <tr>
-<td width="50%"><img src="docs/screenshots/dashboard-light.png" alt="Dashboard in light mode"></td>
-<td width="50%"><img src="docs/screenshots/dashboard-dark.png" alt="Dashboard in dark mode"></td>
+<td width="50%">
+<img src="docs/screenshots/dashboard-light.png" alt="Global dashboard, light mode">
+<p align="center"><sub>Global dashboard — light mode</sub></p>
+</td>
+<td width="50%">
+<img src="docs/screenshots/dashboard-dark.png" alt="Global dashboard, dark mode">
+<p align="center"><sub>Global dashboard — dark mode</sub></p>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<img src="docs/screenshots/project-detail-dark.png" alt="Project detail view with per-project skill and MCP usage">
+<p align="center"><sub>Project detail — top skill / MCP server / hook</sub></p>
+</td>
+<td width="50%">
+<img src="docs/screenshots/tools-dark.png" alt="Tool telemetry view with call distribution chart">
+<p align="center"><sub>Tool telemetry — call distribution</sub></p>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<img src="docs/screenshots/requests-dark.png" alt="Requests explorer with per-request token usage">
+<p align="center"><sub>Requests — trace explorer</sub></p>
+</td>
+<td width="50%">
+<img src="docs/screenshots/reports-dark.png" alt="Reports page for exporting usage and project data as CSV or JSON">
+<p align="center"><sub>Reports — CSV / JSON export</sub></p>
+</td>
+</tr>
+<tr>
+<td width="50%">
+<img src="docs/screenshots/settings-dark.png" alt="Telemetry settings page with collector configuration and table counts">
+<p align="center"><sub>Settings — collector configuration</sub></p>
+</td>
+<td width="50%">
+<img src="docs/screenshots/about-dark.png" alt="About page explaining exact versus estimated attribution">
+<p align="center"><sub>About — exact vs. estimated attribution</sub></p>
+</td>
 </tr>
 </table>
 
-<p align="center">
-  <img src="docs/screenshots/project-detail-dark.png" alt="Project detail view showing per-project skill and MCP usage" width="100%">
-</p>
-
-## 🚀 Quick Start (Install Locally)
+## Quick Start (Install Locally)
 
 `tokentelemetry` isn't published to the npm registry, so there's no bare `npx tokentelemetry`
 to run from just anywhere yet. Instead, clone this repo and run the one-shot setup script —
@@ -141,7 +176,7 @@ Only bare `node cli/setup.js` (or `node cli/setup.js install`) does the full bui
 
 Full details: [`cli/README.md`](cli/README.md).
 
-## 🔁 Running It Every Time
+## Running It Every Time
 
 `tokentelemetry start` doesn't survive a reboot by itself — it just launches three
 background processes. Two ways to keep it running:
@@ -188,7 +223,7 @@ picked up manually once a user systemd session is available.
 
 </details>
 
-## 🗄️ How Data Collection Works
+## How Data Collection Works
 
 Data capture does **not** depend on `tokentelemetry start` being on:
 
@@ -202,7 +237,7 @@ Data capture does **not** depend on `tokentelemetry start` being on:
    file's mtime/size, so turning the daemon off for a while and back on backfills everything
    it missed, nothing is lost.
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 Claude Code
@@ -225,7 +260,17 @@ instant they happen, and **reconcile** backfills exact token usage and full tran
 Claude Code's own session files — so nothing depends on the dashboard being open, and nothing
 is lost if the daemon was off for a while.
 
-## ⚙️ Configuration
+## Documentation
+
+The [`docs/`](docs) folder has the full picture beyond this README:
+
+| Document | Covers |
+|---|---|
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System diagram, data flow, database schema, and the two independent capture paths, with Mermaid diagrams |
+| [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) | Every page in the dashboard, what each metric means, and how to export reports |
+| [`DESIGN.md`](DESIGN.md) | Design tokens and UI rationale (Google Labs `DESIGN.md` format) |
+
+## Configuration
 
 All optional; sensible defaults apply if unset.
 
@@ -237,7 +282,7 @@ All optional; sensible defaults apply if unset.
 | `CLAUDE_TELEMETRY_INTERVAL` | `5` | Daemon poll interval, in seconds |
 | `CLAUDE_TELEMETRY_FORCE_RECONCILE` | unset | Set to `1`/`true` to force a full re-parse of every transcript on the next reconcile |
 
-## 🛠️ Manual / Development Setup
+## Manual / Development Setup
 
 If you're working on the app itself rather than just running it, skip the CLI and run the
 pieces directly:
@@ -256,10 +301,11 @@ browser blocks the cross-origin API fetch; always serve it (`npm run dev`, or th
 - `/` — global command center · `/projects` — project inventory · `/projects/:id` — project
   workspace (with per-project skill/MCP/hook usage) · `/requests` and `/requests/:id` — request
   explorer and full prompt/response view · `/sessions`, `/tools`, `/skills`, `/clients`,
-  `/mcp-plugins` — telemetry breakdowns · `/settings` — collector/data semantics ·
-  `/about` — what "estimated attribution" means and what this tool tracks
+  `/mcp-plugins` — telemetry breakdowns · `/reports` — export usage/tool/attribution data as
+  CSV or JSON · `/settings` — collector/data semantics · `/about` — what "estimated
+  attribution" means and what this tool tracks
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 .
@@ -280,14 +326,14 @@ browser blocks the cross-origin API fetch; always serve it (`npm run dev`, or th
 ├── hooks/               claude-telemetry-hook.py — what Claude Code actually invokes
 ├── cli/                 npx-style installer (`tokentelemetry` command) — see cli/README.md
 ├── tests/               Backend API + reconcile pytest suite
-├── docs/                Design/implementation notes, README screenshots
+├── docs/                Architecture + user guide (see Documentation above), README screenshots
 ├── .github/              Issue/PR templates
 ├── CONTRIBUTING.md
 ├── LICENSE               MIT
 └── DESIGN.md            Design tokens + rationale (Google Labs DESIGN.md format)
 ```
 
-## 🧪 Testing
+## Testing
 
 ```bash
 uv venv .venv && uv pip install -p .venv -r backend/requirements-dev.txt   # or plain venv/pip
@@ -298,19 +344,19 @@ uv venv .venv && uv pip install -p .venv -r backend/requirements-dev.txt   # or 
 (`app.py`) and requires `pytest-playwright` plus a running Streamlit instance — it's not part
 of the primary React app's test path.
 
-## 🎨 Design System
+## Design System
 
 `DESIGN.md` follows the Google Labs DESIGN.md format: YAML design tokens plus ordered
 rationale sections, including light/dark theming rules and the exact-vs-estimated labeling
 convention. Source specification: https://github.com/google-labs-code/design.md
 
-## 🤝 Contributing
+## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) — issue/PR templates live under
 [`.github/`](.github). Short version: run the tests and `npm run build`, keep diffs focused,
 and there's exactly one schema/collector/reconcile implementation (`telemetry/`) — `backend/`
 imports it directly rather than keeping its own copy.
 
-## 📜 License
+## License
 
 [MIT](LICENSE) — see the [`LICENSE`](LICENSE) file for the full text.
