@@ -1,0 +1,13 @@
+[tool.ruff]
+target-version = "py39"
+line-length = 120
+
+[tool.ruff.lint]
+# Pinned explicitly rather than relying on ruff's own "default" selection --
+# that default has changed between ruff releases (0.16 started enabling far
+# more categories, e.g. import-sort, blind-except, bandit-style checks, than
+# 0.15 did with the exact same, unconfigured `ruff check` invocation), which
+# silently broke CI on an unpinned `pip install ruff`. E4/E7/E9/F is ruff's
+# traditional default (pyflakes + pycodestyle errors): undefined names,
+# syntax errors, unused imports/variables, basic style errors.
+select = ["E4", "E7", "E9", "F"]
