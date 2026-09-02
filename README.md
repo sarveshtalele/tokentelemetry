@@ -13,38 +13,54 @@ a local SQLite database; nothing is sent anywhere else.
   skills/MCP servers/hooks used most.
 - **No cost/pricing columns** in the primary UI — intentionally excluded (see `DESIGN.md`).
 
-## Quick start
+## Quick start (install locally)
 
-The fastest way to run everything — backend, dashboard, and telemetry collector — on
-**Windows, macOS, or Linux**, with the Claude Code hooks wired up automatically:
+`tokentelemetry` isn't published to the npm registry — it's not a bare `npx tokentelemetry`
+you can run from just anywhere. Instead, build the CLI package straight from this repo and
+install it once, on **Windows, macOS, or Linux**:
 
 ```bash
-npx tokentelemetry
+git clone https://github.com/sarveshtalele/tokentelemetry.git
+cd tokentelemetry/cli
+npm pack --pack-destination /tmp          # builds the package (vendors backend + built dashboard)
+npm install -g /tmp/tokentelemetry-1.0.0.tgz   # installs the `tokentelemetry` command globally
 ```
 
-That's `install` (copies the app to `~/.tokentelemetry`, sets up a Python env, wires the
-Claude Code hooks into `~/.claude/settings.json`) followed by `start`. Then open
-**http://127.0.0.1:5173**.
+From then on, `tokentelemetry` is a normal command on your `PATH` — no repo checkout needed
+to run it, and no further `npm pack`/`npm install` unless you pull new changes and want to
+rebuild:
+
+```bash
+tokentelemetry install    # copies the app to ~/.tokentelemetry, sets up a Python env,
+                           # wires the Claude Code hooks into ~/.claude/settings.json
+tokentelemetry start      # starts everything
+```
+
+Then open **http://127.0.0.1:5173**.
 
 | Command | What it does |
 |---|---|
-| `npx tokentelemetry install` | Set up the app + Python env + Claude Code hooks (safe to re-run) |
-| `npx tokentelemetry start` | Start the backend (`:8000`), telemetry daemon, and dashboard (`:5173`) |
-| `npx tokentelemetry status` | Show install location, running processes, and health checks |
-| `npx tokentelemetry stop` | Stop everything started by `start` |
-| `npx tokentelemetry uninstall [--purge]` | Remove the Claude Code hooks (`--purge` also deletes app files) |
+| `tokentelemetry install` | Set up the app + Python env + Claude Code hooks (safe to re-run) |
+| `tokentelemetry start` | Start the backend (`:8000`), telemetry daemon, and dashboard (`:5173`) |
+| `tokentelemetry status` | Show install location, running processes, and health checks |
+| `tokentelemetry stop` | Stop everything started by `start` |
+| `tokentelemetry uninstall [--purge]` | Remove the Claude Code hooks (`--purge` also deletes app files) |
 
-Requires Node.js 18+ (for `npx`) and Python 3.9+ on `PATH` — or
-[`uv`](https://docs.astral.sh/uv/), which is used automatically when present (faster env
-setup). Full details: [`cli/README.md`](cli/README.md).
+Requires Node.js 18+ and Python 3.9+ on `PATH` — or [`uv`](https://docs.astral.sh/uv/), which
+is used automatically when present (faster env setup). Full details:
+[`cli/README.md`](cli/README.md).
+
+**Picked up a new commit and want the CLI rebuilt?** Re-run the `npm pack` /
+`npm install -g` step above from a fresh `git pull` — that overwrites the global command with
+the new build.
 
 ## Running it every time
 
 `tokentelemetry start` doesn't survive a reboot by itself — it just launches three
 background processes. Two ways to keep it running:
 
-- **On demand:** run `npx tokentelemetry start` whenever you want it; `npx tokentelemetry
-  stop` to shut it down. `npx tokentelemetry status` tells you what's currently running.
+- **On demand:** run `tokentelemetry start` whenever you want it; `tokentelemetry stop` to
+  shut it down. `tokentelemetry status` tells you what's currently running.
 - **Automatically at login:** wire the telemetry daemon into your OS's startup scheduler
   (see below for Windows; `tokentelemetry status` also prints the exact command for your
   platform).
@@ -53,10 +69,8 @@ background processes. Two ways to keep it running:
 
 `tokentelemetry install` puts everything under `%USERPROFILE%\.tokentelemetry`. To have the
 dashboard running whenever you log in, register a Task Scheduler task that runs
-`tokentelemetry start` at logon.
-
-First, make sure `tokentelemetry` is a persistent command (not just an `npx` one-off) so
-Task Scheduler has a stable path to call: `npm install -g tokentelemetry`.
+`tokentelemetry start` at logon. This assumes you've already done the global install from
+[Quick start](#quick-start-install-locally) above, so `tokentelemetry` is on `PATH`.
 
 **Option A — PowerShell (recommended, one-time setup):**
 
@@ -68,7 +82,7 @@ $Principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interac
 Register-ScheduledTask -TaskName "Claude Token Telemetry" -Action $Action -Trigger $Trigger -Principal $Principal -Force
 ```
 
-Run this once (as your normal user, no admin needed) after `npx tokentelemetry install`.
+Run this once (as your normal user, no admin needed) after `tokentelemetry install`.
 From then on, the backend, daemon, and dashboard start automatically every time you log in.
 
 **Option B — Task Scheduler GUI:**

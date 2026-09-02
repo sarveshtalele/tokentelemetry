@@ -6,20 +6,34 @@ token/tool/skill/hook telemetry — as a global tool on Windows, macOS, and
 Linux, with Claude Code hooks wired up automatically.
 
 The npm package bundles the backend, telemetry collector, hooks, and a
-pre-built copy of the dashboard, so no separate `git clone` is required.
+pre-built copy of the dashboard, so once it's built, no separate `git clone`
+is required to run it.
+
+This package is **not published to the npm registry** — build and install it
+locally from a checkout of this repo:
+
+```
+git clone https://github.com/sarveshtalele/tokentelemetry.git
+cd tokentelemetry/cli
+npm pack --pack-destination /tmp              # runs the prepack build (vendors everything)
+npm install -g /tmp/tokentelemetry-1.0.0.tgz  # installs `tokentelemetry` globally
+```
 
 ## Usage
 
 ```
-npx tokentelemetry              # install (first run) + start everything
-npx tokentelemetry install      # copy app files, set up the Python env, wire Claude Code hooks
-npx tokentelemetry start        # start the backend, telemetry daemon, and dashboard
-npx tokentelemetry status       # show install location, running processes, health checks
-npx tokentelemetry stop         # stop everything started by "start"
-npx tokentelemetry uninstall    # remove the Claude Code hooks (add --purge to also delete app files)
+tokentelemetry              # install (first run) + start everything
+tokentelemetry install      # copy app files, set up the Python env, wire Claude Code hooks
+tokentelemetry start        # start the backend, telemetry daemon, and dashboard
+tokentelemetry status       # show install location, running processes, health checks
+tokentelemetry stop         # stop everything started by "start"
+tokentelemetry uninstall    # remove the Claude Code hooks (add --purge to also delete app files)
 ```
 
 Then open **http://127.0.0.1:5173**.
+
+If this ever gets published to npm for real, all of the above collapses to
+plain `npx tokentelemetry ...` — no local build/install step needed.
 
 ## What "install" does
 
