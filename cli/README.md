@@ -85,10 +85,12 @@ Runs three local processes (see `tokentelemetry status` for health/PIDs, and
 - Telemetry reconcile daemon (polls Claude Code session transcripts)
 - A static file server for the dashboard on `http://127.0.0.1:5173`
 
-Autostart at login isn't configured automatically — `tokentelemetry status`
-prints the exact command to wire into Task Scheduler (Windows), launchd
-(macOS), or a systemd `--user` service (Linux) if you want the daemon
-running in the background after you log in.
+To have this run automatically every time you log in, run
+`tokentelemetry autostart enable` — it registers a Task Scheduler task
+(Windows), a launchd agent (macOS), or a systemd `--user` service (Linux)
+that runs `start` at login, using absolute paths so it works regardless of
+what the OS scheduler's `PATH` looks like. `tokentelemetry autostart
+disable` removes it, and `tokentelemetry status` shows whether it's on.
 
 ## Requirements
 

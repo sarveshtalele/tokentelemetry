@@ -11,7 +11,9 @@ is it tested, and does it match the existing style.
    .venv/bin/python -m pytest tests/test_backend_api.py tests/test_reconcile.py
    cd frontend && npm run build   # type-checks + builds
    ```
-   Both should be clean before you push.
+   Both should be clean before you push. CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml))
+   runs the same checks (plus `npm audit`) automatically on every push and pull request, so a
+   red check there means one of these didn't pass.
 2. **Keep diffs focused.** Small, single-purpose PRs over drive-by refactors.
 3. **Match the code style:** no comments unless they explain a non-obvious *why* (a hidden
    constraint, a workaround, a subtle invariant) — not what the code already says.
@@ -41,7 +43,9 @@ deciding.
 
 ## Security
 
-If you find a security issue (e.g. something that could leak local telemetry data, or a
-vulnerability in how the CLI installs/executes things), please open an issue describing it.
-There's no dedicated security contact yet — treat this as a best-effort local tool, not a
-hardened service.
+**Please don't open a public issue for a suspected vulnerability.** See
+[`SECURITY.md`](SECURITY.md) for how to report it privately, and
+[`docs/SECURITY.md`](docs/SECURITY.md) for the project's threat model and full security
+review — it explains what's in scope (e.g. a path-traversal or injection bug) versus accepted
+risk for a local-first, single-user tool (e.g. no backend authentication, since it only binds
+to `127.0.0.1`).

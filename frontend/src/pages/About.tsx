@@ -1,21 +1,71 @@
+import type { ReactNode, SVGProps } from 'react';
 import { Link } from 'react-router-dom';
 import { Badge } from '../components/ui/Badge';
+import {
+  IconDashboard,
+  IconWrench,
+  IconBolt,
+  IconPlug,
+  IconDownload,
+  IconMoon,
+} from '../components/ui/Icons';
 import { PageHead } from './GlobalDashboard';
 
 export function About() {
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-8 max-w-3xl">
       <PageHead
         eyebrow="Product"
         title="About Claude Telemetry Enterprise"
-        subtitle="A local-first observability console for Claude Code: exact request usage plus estimated tool, file, and skill attribution."
+        subtitle="A local-first observability console for Claude Code — see exactly where your tokens, tool calls, and skills go, without sending any of that data anywhere but your own machine."
       />
 
-      <Section title="What this tracks">
+      <Section title="What this is, in plain terms">
         <p>
-          A background collector reads your Claude Code session transcripts and hook events into a local
-          SQLite database (nothing leaves your machine). The dashboard then shows, per project, client and
-          session: token usage, requests, tool calls, skill activations, MCP server calls, and hook firings.
+          Claude Telemetry Enterprise is a small program that runs on your own computer,
+          alongside Claude Code. It quietly keeps a record of how Claude Code is being used —
+          how many tokens each request costs, which tools and skills get called, which MCP
+          servers are active, and which project each of those happened in — and shows it back
+          to you in a dashboard you can search, filter, and export.
+        </p>
+        <p className="mt-3">
+          Nothing about that record is guessed after the fact from a bill or an invoice: it is
+          built the moment things actually happen, by reading the same files Claude Code
+          already writes for itself. Nothing about it is sent anywhere either — there is no
+          account to sign into and no server to trust besides the one already running on your
+          machine.
+        </p>
+      </Section>
+
+      <Section title="What you can do with it">
+        <FeatureGrid />
+      </Section>
+
+      <Section title="How it works, without the jargon">
+        <ol className="space-y-3 list-none">
+          <Step n={1} title="Claude Code tells us when something happens">
+            Five small hooks (already wired in automatically during install) notify this tool
+            the instant a session starts, a prompt is sent, or a tool runs — so live activity
+            shows up right away, not on a delay.
+          </Step>
+          <Step n={2} title="A background process fills in the exact numbers">
+            Every request's real token usage only exists in Claude Code's own session files, so
+            a background process reads those files on a short timer and fills in the precise
+            counts — catching up automatically on anything it missed if it was off for a while.
+          </Step>
+          <Step n={3} title="The dashboard shows you both">
+            Everything lands in one local database, and this dashboard reads from it — nothing
+            you see here required Claude Code to be told about this tool, or required any data
+            to leave your machine.
+          </Step>
+        </ol>
+        <p className="mt-3">
+          The technical version of this — the actual database tables and data-flow diagrams —
+          is in{' '}
+          <a href="https://github.com/sarveshtalele/tokentelemetry/blob/main/docs/ARCHITECTURE.md" target="_blank" rel="noreferrer" className="text-accent-strong hover:underline">
+            docs/ARCHITECTURE.md
+          </a>
+          .
         </p>
       </Section>
 
@@ -55,25 +105,73 @@ export function About() {
         </p>
       </Section>
 
-      <Section title="Local-first">
+      <Section title="Local-first and private by design">
         <p>
           Everything runs on your machine: a Python collector + FastAPI backend on top of a local SQLite
-          file, and this React UI talking to it over <span className="font-mono">/api/v1</span>. See{' '}
+          file, and this React UI talking to it over <span className="font-mono">/api/v1</span> — never a
+          request outside <span className="font-mono">127.0.0.1</span>. See{' '}
           <Link to="/settings" className="text-accent-strong hover:underline">
             Settings
           </Link>{' '}
-          for the database path and collector status.
+          for the exact database path and collector status on this machine.
+        </p>
+        <p className="mt-3">
+          The project is open source under the MIT license. The full source, the installation
+          guide, and a complete security review are on{' '}
+          <a href="https://github.com/sarveshtalele/tokentelemetry" target="_blank" rel="noreferrer" className="text-accent-strong hover:underline">
+            GitHub
+          </a>
+          .
         </p>
       </Section>
     </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="bg-surface border border-line rounded-lg p-5">
       <h3 className="text-sm font-bold mb-2.5">{title}</h3>
       <div className="text-sm text-ink-soft leading-relaxed">{children}</div>
+    </div>
+  );
+}
+
+function Step({ n, title, children }: { n: number; title: string; children: ReactNode }) {
+  return (
+    <li className="flex gap-3">
+      <span className="shrink-0 w-6 h-6 rounded-full bg-accent-soft text-accent-strong text-xs font-extrabold grid place-items-center mt-0.5">
+        {n}
+      </span>
+      <div>
+        <div className="text-ink font-semibold text-sm mb-0.5">{title}</div>
+        <p>{children}</p>
+      </div>
+    </li>
+  );
+}
+
+const FEATURES: { Icon: (props: SVGProps<SVGSVGElement>) => ReactNode; title: string; body: string }[] = [
+  { Icon: IconDashboard, title: 'Token & cost visibility', body: 'Every request, every project, all time by default — not capped at 30 days.' },
+  { Icon: IconWrench, title: 'Tool & skill breakdowns', body: 'See which tools, skills, and MCP servers actually drive usage, per project.' },
+  { Icon: IconBolt, title: 'Live activity', body: 'A live indicator and event feed reflect what Claude Code is doing right now.' },
+  { Icon: IconPlug, title: 'Full trace inspection', body: 'Open the complete, untruncated prompt and response behind any request.' },
+  { Icon: IconDownload, title: 'Report export', body: 'Download usage or project summaries as CSV or JSON for your own analysis.' },
+  { Icon: IconMoon, title: 'Dark & light mode', body: 'Matches your OS preference by default, with a persistent manual toggle.' },
+];
+
+function FeatureGrid() {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {FEATURES.map((f) => (
+        <div key={f.title} className="flex gap-3 bg-surface-muted rounded-lg p-3.5">
+          <f.Icon className="text-accent shrink-0 mt-0.5" width={20} height={20} />
+          <div>
+            <div className="text-ink font-semibold text-sm">{f.title}</div>
+            <div className="text-ink-soft text-xs mt-0.5">{f.body}</div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

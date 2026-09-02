@@ -15,6 +15,7 @@
   <img src="https://img.shields.io/badge/Python-%E2%89%A53.9-3776AB?logo=python&logoColor=white" alt="Python">
   <img src="https://img.shields.io/badge/Backend-FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI">
   <img src="https://img.shields.io/badge/Frontend-React%20%2B%20Vite%20%2B%20TypeScript-61DAFB?logo=react&logoColor=white" alt="React">
+  <img src="https://github.com/sarveshtalele/tokentelemetry/actions/workflows/ci.yml/badge.svg" alt="CI status">
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
 </p>
 
@@ -36,13 +37,14 @@ configuration.
 6. [How Data Collection Works](#how-data-collection-works)
 7. [Architecture](#architecture)
 8. [Documentation](#documentation)
-9. [Configuration](#configuration)
-10. [Manual / Development Setup](#manual--development-setup)
-11. [Project Structure](#project-structure)
-12. [Testing](#testing)
-13. [Design System](#design-system)
-14. [Contributing](#contributing)
-15. [License](#license)
+9. [Security](#security)
+10. [Configuration](#configuration)
+11. [Manual / Development Setup](#manual--development-setup)
+12. [Project Structure](#project-structure)
+13. [Testing](#testing)
+14. [Design System](#design-system)
+15. [Contributing & Repository Automation](#contributing--repository-automation)
+16. [License](#license)
 
 ## Why
 
@@ -153,6 +155,10 @@ front and tells you what's missing rather than failing partway through.
 
 **Picked up a new commit?** `git pull`, then run `node cli/setup.js` again from the repo —
 it rebuilds and reinstalls the global command before showing the menu.
+
+For per-OS notes, updating, uninstalling, and a troubleshooting section (port conflicts,
+`PATH` issues, "no data showing up"), see the full
+**[Installation Guide](docs/INSTALLATION.md)**.
 
 ### After the first run
 
@@ -266,9 +272,29 @@ The [`docs/`](docs) folder has the full picture beyond this README:
 
 | Document | Covers |
 |---|---|
+| [`docs/INSTALLATION.md`](docs/INSTALLATION.md) | Full install guide: per-OS notes, autostart, updating, uninstalling, troubleshooting |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System diagram, data flow, database schema, and the two independent capture paths, with Mermaid diagrams |
 | [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) | Every page in the dashboard, what each metric means, and how to export reports |
+| [`docs/SECURITY.md`](docs/SECURITY.md) | Full cybersecurity review — threat model, methodology, findings, and residual risk |
 | [`DESIGN.md`](DESIGN.md) | Design tokens and UI rationale (Google Labs `DESIGN.md` format) |
+
+## Security
+
+This is a local-first tool: the backend only binds to `127.0.0.1`, and no
+data it collects — prompts, responses, tool calls, file paths — is ever sent anywhere else.
+A full cybersecurity review (threat model, what was checked, and every finding with its fix)
+lives in [`docs/SECURITY.md`](docs/SECURITY.md). Summary of what it covers:
+
+- **Fixed:** a path-traversal gap in the CLI's static file server, two dependency CVEs
+  (`react-router-dom`, `vite`), and a CSV/formula-injection gap in the report exporter.
+- **Reviewed, no issue found:** SQL injection (fully parameterized), CORS configuration,
+  command injection, secret leakage (source and full git history), and XSS.
+- **Automated going forward:** [`.github/dependabot.yml`](.github/dependabot.yml) opens a
+  weekly PR for any outdated dependency across `frontend/`, `cli/`, and the Python
+  requirements; [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs the lint/test/build
+  suite (and `npm audit`) on every push and pull request.
+
+Found a vulnerability? See [`SECURITY.md`](SECURITY.md) for how to report it privately.
 
 ## Configuration
 
@@ -326,9 +352,10 @@ browser blocks the cross-origin API fetch; always serve it (`npm run dev`, or th
 ├── hooks/               claude-telemetry-hook.py — what Claude Code actually invokes
 ├── cli/                 npx-style installer (`tokentelemetry` command) — see cli/README.md
 ├── tests/               Backend API + reconcile pytest suite
-├── docs/                Architecture + user guide (see Documentation above), README screenshots
-├── .github/              Issue/PR templates
+├── docs/                Installation, architecture, user guide, security review, screenshots
+├── .github/              Issue/PR templates, issue chooser config, CI workflow, Dependabot config
 ├── CONTRIBUTING.md
+├── SECURITY.md           Vulnerability reporting policy
 ├── LICENSE               MIT
 └── DESIGN.md            Design tokens + rationale (Google Labs DESIGN.md format)
 ```
@@ -350,12 +377,27 @@ of the primary React app's test path.
 rationale sections, including light/dark theming rules and the exact-vs-estimated labeling
 convention. Source specification: https://github.com/google-labs-code/design.md
 
-## Contributing
+## Contributing & Repository Automation
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) — issue/PR templates live under
-[`.github/`](.github). Short version: run the tests and `npm run build`, keep diffs focused,
-and there's exactly one schema/collector/reconcile implementation (`telemetry/`) — `backend/`
-imports it directly rather than keeping its own copy.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the short version: run the tests and
+`npm run build`, keep diffs focused, and there's exactly one schema/collector/reconcile
+implementation (`telemetry/`) — `backend/` imports it directly rather than keeping its own
+copy.
+
+What's automated for you once a change is pushed or a PR is opened:
+
+- **CI** ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) — runs `ruff` and the pytest
+  suite against the backend, `tsc` + `vite build` + `npm audit` against the frontend, and a
+  syntax check across every CLI script, on every push to `main` and every pull request.
+- **Dependabot** ([`.github/dependabot.yml`](.github/dependabot.yml)) — opens a weekly PR for
+  any outdated dependency in `frontend/`, `cli/`, the Python requirements, or the GitHub
+  Actions workflow itself.
+- **Issue templates** ([`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE)) — bug report and
+  feature request forms, plus [`config.yml`](.github/ISSUE_TEMPLATE/config.yml), which turns
+  off free-form blank issues and points questions/security reports at the right place instead
+  of a public issue.
+- **PR template** ([`.github/PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md)) —
+  a consistent checklist for what changed and how it was tested.
 
 ## License
 
