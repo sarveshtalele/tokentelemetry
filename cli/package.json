@@ -27,5 +27,11 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sarveshtalele/tokentelemetry.git"
-  }
+  },
+  "homepage": "https://github.com/sarveshtalele/tokentelemetry#readme",
+  "bugs": {
+    "url": "https://github.com/sarveshtalele/tokentelemetry/issues"
+  },
+  "license": "MIT",
+  "author": "Sarvesh Talele"
 }

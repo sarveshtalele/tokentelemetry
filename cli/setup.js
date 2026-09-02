@@ -6,12 +6,14 @@
 //
 // Every run after that doesn't need any of the build/install work redone —
 // use the fast subcommands instead, which skip straight to the action:
-//   node cli/setup.js start     Start the backend, daemon, and dashboard
-//   node cli/setup.js stop      Stop everything
-//   node cli/setup.js status    Show what's running
-//   node cli/setup.js delete    Full teardown: remove hooks + ~/.tokentelemetry
-//   node cli/setup.js uninstall Remove hooks only, keep app files/database
-//   node cli/setup.js install   Re-run the full build+install (e.g. after `git pull`)
+//   node cli/setup.js start              Start the backend, daemon, and dashboard
+//   node cli/setup.js stop               Stop everything
+//   node cli/setup.js status             Show what's running
+//   node cli/setup.js autostart enable   Start automatically at login
+//   node cli/setup.js autostart disable  Remove the autostart entry
+//   node cli/setup.js delete             Full teardown: remove hooks + ~/.tokentelemetry
+//   node cli/setup.js uninstall          Remove hooks only, keep app files/database
+//   node cli/setup.js install            Re-run the full build+install (e.g. after `git pull`)
 //
 // (Once installed, the equivalent "tokentelemetry start/stop/status/..."
 // global command is just as fast — these subcommands exist for people who'd
@@ -90,14 +92,17 @@ function printMenu() {
   console.log('  1) Start the dashboard');
   console.log('  2) Stop the dashboard');
   console.log('  3) Show status');
-  console.log('  4) Uninstall (remove Claude Code hooks)');
-  console.log('  5) Exit');
+  console.log('  4) Enable autostart at login');
+  console.log('  5) Disable autostart at login');
+  console.log('  6) Uninstall (remove Claude Code hooks)');
+  console.log('  7) Exit');
   process.stdout.write('> ');
 }
 
 async function interactiveLoop() {
   const { start, stop, status } = require(path.join(CLI_DIR, 'src', 'run.js'));
   const { uninstall } = require(path.join(CLI_DIR, 'src', 'install.js'));
+  const autostart = require(path.join(CLI_DIR, 'src', 'autostart.js'));
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
   printMenu();
@@ -114,7 +119,15 @@ async function interactiveLoop() {
         case '3':
           await status();
           break;
-        case '4': {
+        case '4':
+          autostart.enable();
+          console.log('Autostart enabled — the dashboard will start automatically at login.');
+          break;
+        case '5':
+          autostart.disable();
+          console.log('Autostart disabled.');
+          break;
+        case '6': {
           rl.pause();
           const purge = await new Promise((resolve) =>
             rl.question('Also delete the app files and database? [y/N] ', (a) => resolve(/^y/i.test(a.trim())))
@@ -123,7 +136,7 @@ async function interactiveLoop() {
           uninstall({ purge });
           break;
         }
-        case '5':
+        case '7':
           rl.close();
           break;
         default:
@@ -132,7 +145,7 @@ async function interactiveLoop() {
     } catch (err) {
       console.error(`Error: ${err.message}`);
     }
-    if (choice === '5') break;
+    if (choice === '7') break;
     printMenu();
   }
   console.log('Done. Run "node cli/setup.js" again anytime, or use the "tokentelemetry" command directly.');
@@ -147,8 +160,10 @@ async function fullSetup() {
 
 async function main() {
   const cmd = process.argv[2];
+  const subCmd = process.argv[3];
   const { start, stop, status } = require(path.join(CLI_DIR, 'src', 'run.js'));
   const { uninstall } = require(path.join(CLI_DIR, 'src', 'install.js'));
+  const autostart = require(path.join(CLI_DIR, 'src', 'autostart.js'));
 
   switch (cmd) {
     case undefined:
@@ -164,6 +179,20 @@ async function main() {
     case 'status':
       await status();
       break;
+    case 'autostart':
+      if (subCmd === 'enable') {
+        autostart.enable();
+        console.log('Autostart enabled — the dashboard will start automatically at login.');
+      } else if (subCmd === 'disable') {
+        autostart.disable();
+        console.log('Autostart disabled.');
+      } else if (subCmd === 'status') {
+        console.log(autostart.isEnabled() ? 'Autostart is enabled.' : 'Autostart is not enabled.');
+      } else {
+        console.error('Usage: node cli/setup.js autostart <enable|disable|status>');
+        process.exitCode = 1;
+      }
+      break;
     case 'delete':
       uninstall({ purge: true });
       break;
@@ -172,7 +201,7 @@ async function main() {
       break;
     default:
       console.error(`Unknown command: "${cmd}"`);
-      console.error('Usage: node cli/setup.js [install|start|stop|status|delete|uninstall]');
+      console.error('Usage: node cli/setup.js [install|start|stop|status|autostart|delete|uninstall]');
       process.exitCode = 1;
   }
 }

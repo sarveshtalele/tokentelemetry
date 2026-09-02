@@ -1,16 +1,20 @@
 #!/usr/bin/env node
 const { install, uninstall } = require('../src/install');
 const { start, stop, status } = require('../src/run');
+const autostart = require('../src/autostart');
 
 const HELP = `tokentelemetry — install and run the Claude Telemetry Enterprise console
 
 Usage:
-  tokentelemetry                 Install (if needed) and start everything
-  tokentelemetry install         Copy app files, set up Python env, wire Claude Code hooks
-  tokentelemetry start           Start the backend, telemetry daemon, and dashboard
-  tokentelemetry stop            Stop everything started by "start"
-  tokentelemetry status          Show install location, running processes, health checks
-  tokentelemetry uninstall       Remove the Claude Code hooks (add --purge to also delete app files)
+  tokentelemetry                    Install (if needed) and start everything
+  tokentelemetry install            Copy app files, set up Python env, wire Claude Code hooks
+  tokentelemetry start              Start the backend, telemetry daemon, and dashboard
+  tokentelemetry stop               Stop everything started by "start"
+  tokentelemetry status             Show install location, running processes, health checks
+  tokentelemetry autostart enable   Start automatically at login (Task Scheduler / launchd / systemd)
+  tokentelemetry autostart disable  Remove the autostart entry
+  tokentelemetry autostart status   Show whether autostart is enabled
+  tokentelemetry uninstall          Remove the Claude Code hooks (add --purge to also delete app files)
 
 Environment:
   TOKENTELEMETRY_HOME   Install directory (default: ~/.tokentelemetry)
@@ -18,7 +22,7 @@ Environment:
 `;
 
 async function main() {
-  const [, , cmdArg, ...rest] = process.argv;
+  const [, , cmdArg, subArg, ...rest] = process.argv;
   const cmd = cmdArg || 'default';
 
   switch (cmd) {
@@ -34,8 +38,26 @@ async function main() {
     case 'status':
       await status();
       break;
+    case 'autostart':
+      switch (subArg) {
+        case 'enable':
+          autostart.enable();
+          console.log('Autostart enabled — the dashboard will start automatically at login.');
+          break;
+        case 'disable':
+          autostart.disable();
+          console.log('Autostart disabled.');
+          break;
+        case 'status':
+          console.log(autostart.isEnabled() ? 'Autostart is enabled.' : 'Autostart is not enabled.');
+          break;
+        default:
+          console.error(`Usage: tokentelemetry autostart <enable|disable|status>`);
+          process.exitCode = 1;
+      }
+      break;
     case 'uninstall':
-      uninstall({ purge: rest.includes('--purge') });
+      uninstall({ purge: [subArg, ...rest].includes('--purge') });
       break;
     case 'default':
       install();

@@ -159,15 +159,15 @@ async function status() {
   console.log(`Backend health check:  ${backendUp ? 'OK' : 'unreachable'} (http://127.0.0.1:${BACKEND_PORT}/health)`);
   console.log(`Dashboard reachable:   ${frontendUp ? 'OK' : 'unreachable'} (http://127.0.0.1:${FRONTEND_PORT}/)`);
   console.log('');
-  console.log('Autostart at login is not configured automatically. To run the daemon in the');
-  console.log('background at login, use your OS scheduler with this command:');
-  console.log(`  ${paths.venvPython()} -m telemetry.daemon   (cwd: ${paths.installDir()})`);
-  if (process.platform === 'win32') {
-    console.log('  Windows: Task Scheduler -> Create Task -> Trigger "At log on" -> Action above.');
-  } else if (process.platform === 'darwin') {
-    console.log('  macOS: wrap the command above in a launchd .plist under ~/Library/LaunchAgents.');
-  } else {
-    console.log('  Linux: wrap the command above in a systemd --user service and `systemctl --user enable` it.');
+  try {
+    const autostart = require('./autostart');
+    const enabled = autostart.isEnabled();
+    console.log(`Autostart at login:    ${enabled ? 'enabled' : 'not enabled'}`);
+    if (!enabled) {
+      console.log('  Run "tokentelemetry autostart enable" to start automatically every time you log in.');
+    }
+  } catch (err) {
+    console.log(`Autostart at login:    unknown (${err.message})`);
   }
 }
 

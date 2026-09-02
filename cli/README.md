@@ -33,12 +33,14 @@ npm install -g /tmp/tokentelemetry-1.0.0.tgz  # installs `tokentelemetry` global
 ## Usage
 
 ```
-tokentelemetry              # install (first run) + start everything
-tokentelemetry install      # copy app files, set up the Python env, wire Claude Code hooks
-tokentelemetry start        # start the backend, telemetry daemon, and dashboard
-tokentelemetry status       # show install location, running processes, health checks
-tokentelemetry stop         # stop everything started by "start"
-tokentelemetry uninstall    # remove the Claude Code hooks (add --purge to also delete app files)
+tokentelemetry                    # install (first run) + start everything
+tokentelemetry install            # copy app files, set up the Python env, wire Claude Code hooks
+tokentelemetry start              # start the backend, telemetry daemon, and dashboard
+tokentelemetry status             # show install location, running processes, health checks
+tokentelemetry stop               # stop everything started by "start"
+tokentelemetry autostart enable   # start automatically at login (Task Scheduler / launchd / systemd)
+tokentelemetry autostart disable  # remove the autostart entry
+tokentelemetry uninstall          # remove the Claude Code hooks (add --purge to also delete app files)
 ```
 
 Then open **http://127.0.0.1:5173**.

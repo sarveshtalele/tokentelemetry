@@ -145,45 +145,45 @@ background processes. Two ways to keep it running:
 
 - **On demand:** run `tokentelemetry start` whenever you want it; `tokentelemetry stop` to
   shut it down. `tokentelemetry status` tells you what's currently running.
-- **Automatically at login:** wire the telemetry daemon into your OS's startup scheduler
-  (see below for Windows; `tokentelemetry status` also prints the exact command for your
-  platform).
+- **Automatically at login:**
+  ```bash
+  tokentelemetry autostart enable
+  ```
+  One command, cross-platform. It registers a **Task Scheduler task** (Windows), a
+  **launchd LaunchAgent** (macOS), or a **systemd `--user` service** (Linux) that runs the
+  backend, daemon, and dashboard at login — using absolute paths to `node` and this
+  package's own install, not something that depends on `PATH` being visible to the OS
+  scheduler. `tokentelemetry autostart disable` removes it; `tokentelemetry autostart
+  status` (or plain `tokentelemetry status`) shows whether it's on. `tokentelemetry
+  uninstall --purge` disables it automatically as part of the full teardown.
 
-### Start automatically at Windows login
+  Running from the repo checkout instead? `node cli/setup.js autostart enable` does the
+  same thing (menu option 4 in the interactive setup).
 
-`tokentelemetry install` puts everything under `%USERPROFILE%\.tokentelemetry`. To have the
-dashboard running whenever you log in, register a Task Scheduler task that runs
-`tokentelemetry start` at logon. This assumes you've already done the global install from
-[Quick start](#quick-start-install-locally) above, so `tokentelemetry` is on `PATH`.
+<details>
+<summary>What <code>autostart enable</code> actually sets up, per OS (for when you'd rather do it by hand, or it needs troubleshooting)</summary>
 
-**Option A — PowerShell (recommended, one-time setup):**
-
+**Windows** — a Task Scheduler task named "Claude Token Telemetry", trigger "At log on",
+action `node.exe "<path to tokentelemetry.js>" start`. Equivalent manual PowerShell:
 ```powershell
-$Tokentelemetry = (Get-Command tokentelemetry.cmd).Source
-$Action  = New-ScheduledTaskAction -Execute $Tokentelemetry -Argument "start"
+$Action  = New-ScheduledTaskAction -Execute "node.exe" -Argument '"<path>\tokentelemetry.js" start'
 $Trigger = New-ScheduledTaskTrigger -AtLogOn
 $Principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited
 Register-ScheduledTask -TaskName "Claude Token Telemetry" -Action $Action -Trigger $Trigger -Principal $Principal -Force
 ```
+Undo: `Unregister-ScheduledTask -TaskName "Claude Token Telemetry" -Confirm:$false`.
 
-Run this once (as your normal user, no admin needed) after `tokentelemetry install`.
-From then on, the backend, daemon, and dashboard start automatically every time you log in.
+**macOS** — a launchd agent at `~/Library/LaunchAgents/com.tokentelemetry.app.plist` with
+`RunAtLoad`, loaded via `launchctl load -w`. Undo: `launchctl unload` that file, then delete it.
 
-**Option B — Task Scheduler GUI:**
+**Linux** — a systemd user unit at `~/.config/systemd/user/tokentelemetry.service`
+(`WantedBy=default.target`), enabled via `systemctl --user enable --now`. Undo:
+`systemctl --user disable --now tokentelemetry.service`. Some minimal/headless setups don't
+run a user systemd instance (`Failed to connect to bus`) — if so, `enable` will report that
+clearly rather than pretending to succeed; the unit file above still gets written and can be
+picked up manually once a user systemd session is available.
 
-1. Open **Task Scheduler** → **Create Task…**
-2. **General** tab: name it `Claude Token Telemetry`; under *Security options* choose
-   "Run only when user is logged on".
-3. **Triggers** tab → **New…** → *Begin the task:* **At log on** → OK.
-4. **Actions** tab → **New…** → *Program/script:* the full path to `tokentelemetry.cmd`
-   (find it by running `where tokentelemetry` in a terminal) → *Add arguments:* `start`.
-5. Save. Test it immediately with **Run** in the task list.
-
-To undo: delete the task from Task Scheduler, or run:
-`Unregister-ScheduledTask -TaskName "Claude Token Telemetry" -Confirm:$false`.
-
-**macOS / Linux:** run `tokentelemetry status` for the equivalent `launchd`
-(`~/Library/LaunchAgents`) / `systemd --user` command and working directory to wire up.
+</details>
 
 ## 🗄️ How Data Collection Works
 
@@ -263,19 +263,24 @@ browser blocks the cross-origin API fetch; always serve it (`npm run dev`, or th
 ├── backend/           FastAPI service — REST (/api/v1) + WebSocket (/ws/live) over SQLite
 │   └── app/
 │       ├── api/routes/    One module per resource (usage, projects, tools, skills, mcp, …)
-│       ├── db/             Connection + schema/migrations
-│       └── services/       Collector, reconcile, attribution logic (mirrors telemetry/)
+│       └── db/             connection.py (its own connect() wrapper) + schema.py
+│                             (re-exports telemetry/db.py's SCHEMA/migrations — see below)
 ├── frontend/           React + Vite + TypeScript + Tailwind + Recharts dashboard
 │   └── src/
 │       ├── pages/          One component per route
 │       ├── components/     Layout, charts, data tables, shared UI
 │       ├── api/             Typed fetch wrappers per resource
 │       └── hooks/           useApi, useLiveData (WebSocket), useTheme (dark/light)
-├── telemetry/          Collector + reconcile + SQLite schema (the daemon's own copy)
+├── telemetry/          The canonical collector, reconcile, and SQLite schema/migrations —
+│                        backend/ imports this directly (sys.path bootstrap in
+│                        backend/app/main.py) instead of keeping a second copy
 ├── hooks/               claude-telemetry-hook.py — what Claude Code actually invokes
 ├── cli/                 npx-style installer (`tokentelemetry` command) — see cli/README.md
 ├── tests/               Backend API + reconcile pytest suite
 ├── docs/                Design/implementation notes, README screenshots
+├── .github/              Issue/PR templates
+├── CONTRIBUTING.md
+├── LICENSE               MIT
 └── DESIGN.md            Design tokens + rationale (Google Labs DESIGN.md format)
 ```
 
@@ -298,16 +303,10 @@ convention. Source specification: https://github.com/google-labs-code/design.md
 
 ## 🤝 Contributing
 
-Issues and PRs are welcome. Before opening one:
-
-- Run the test suite (`Testing` above) and `cd frontend && npm run build` (type-checks +
-  builds) — both should be clean.
-- Match the existing code style: no comments unless they explain a non-obvious *why*; small,
-  focused diffs over drive-by refactors.
-- If you touch `backend/` or `telemetry/`, check both — `backend/app/db/schema.py` and
-  `telemetry/db.py` are two independent schema copies (the API server and the background
-  daemon connect through them separately) and need to stay in sync; see the comments in
-  either file for why.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) — issue/PR templates live under
+[`.github/`](.github). Short version: run the tests and `npm run build`, keep diffs focused,
+and there's exactly one schema/collector/reconcile implementation (`telemetry/`) — `backend/`
+imports it directly rather than keeping its own copy.
 
 ## 📜 License
 

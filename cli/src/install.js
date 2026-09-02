@@ -124,8 +124,7 @@ function install() {
   log(`  Python env:    ${paths.venvDir()}`);
   log('');
   log('Run "tokentelemetry start" to launch the backend, daemon, and dashboard.');
-  log('To start telemetry automatically at login, see "tokentelemetry status" for the manual');
-  log('OS autostart command for your platform (Task Scheduler / launchd / systemd --user).');
+  log('Run "tokentelemetry autostart enable" to have it start automatically every time you log in.');
 }
 
 function uninstall({ purge = false } = {}) {
@@ -147,6 +146,15 @@ function uninstall({ purge = false } = {}) {
 
   const dirExists = fs.existsSync(paths.installDir());
   if (purge) {
+    try {
+      const autostart = require('./autostart');
+      if (autostart.isEnabled()) {
+        autostart.disable();
+        log('Disabled autostart.');
+      }
+    } catch (err) {
+      log(`Could not check/disable autostart (continuing): ${err.message}`);
+    }
     if (dirExists) {
       fs.rmSync(paths.installDir(), { recursive: true, force: true });
       log(`Removed ${paths.installDir()}`);

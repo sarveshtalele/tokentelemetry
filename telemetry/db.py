@@ -77,13 +77,10 @@ def _add_column(conn, table, column, ddl):
     if column not in cols:
         conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {ddl}")
 
-def connect(db_path):
-    p = Path(db_path).expanduser()
-    p.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(p, timeout=30)
-    conn.execute("PRAGMA foreign_keys=ON")
-    conn.execute("PRAGMA busy_timeout=30000")
-    conn.executescript(SCHEMA)
+def migrate(conn):
+    """Apply all schema migrations. The single source of truth for both this
+    module's own connect() and backend/app/db/schema.py, which re-exports
+    this function -- see backend/app/main.py for how backend imports it."""
     # v3 -> v4 migrations
     _add_column(conn, "usage", "provider", "TEXT")
     _add_column(conn, "usage", "context_window", "INTEGER DEFAULT 0")
@@ -94,4 +91,13 @@ def connect(db_path):
     _add_column(conn, "usage", "prompt_full", "TEXT")
     _add_column(conn, "usage", "response_full", "TEXT")
     conn.commit()
+
+def connect(db_path):
+    p = Path(db_path).expanduser()
+    p.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(p, timeout=30)
+    conn.execute("PRAGMA foreign_keys=ON")
+    conn.execute("PRAGMA busy_timeout=30000")
+    conn.executescript(SCHEMA)
+    migrate(conn)
     return conn

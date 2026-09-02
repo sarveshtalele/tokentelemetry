@@ -41,7 +41,8 @@ async def get_settings():
 
 @router.post("/reconcile")
 async def trigger_reconcile():
-    from ...services.reconcile import reconcile
+    # The canonical implementation -- see the sys.path bootstrap in app/main.py.
+    from telemetry.reconcile import reconcile
 
     changed, _ = reconcile()
     return {"data": {"changed": changed}}
