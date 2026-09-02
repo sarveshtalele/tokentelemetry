@@ -10,10 +10,21 @@ pre-built copy of the dashboard, so once it's built, no separate `git clone`
 is required to run it.
 
 This package is **not published to the npm registry** — build and install it
-locally from a checkout of this repo:
+locally from a checkout of this repo. The easiest way is the one-shot setup
+script, which detects your system, builds + installs the global
+`tokentelemetry` command, runs the app install, and then drops you into an
+interactive Start/Stop/Status/Uninstall menu:
 
 ```
 git clone https://github.com/sarveshtalele/tokentelemetry.git
+cd tokentelemetry
+node cli/setup.js
+```
+
+To do the same steps by hand instead (e.g. for scripting, or if you just
+want the global command without the interactive menu):
+
+```
 cd tokentelemetry/cli
 npm pack --pack-destination /tmp              # runs the prepack build (vendors everything)
 npm install -g /tmp/tokentelemetry-1.0.0.tgz  # installs `tokentelemetry` globally

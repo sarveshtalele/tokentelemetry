@@ -1,11 +1,14 @@
-// Minimal static file server with SPA fallback (no dependencies).
-// Usage: node static-server.js <dir> <port>
+// Minimal static file server with SPA fallback and an /api reverse proxy to
+// the FastAPI backend (mirrors frontend/vite.config.ts's dev-server proxy,
+// which only applies to `npm run dev` — this is the production equivalent).
+// Usage: node static-server.js <dir> <port> [backendPort]
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
 
 const dir = process.argv[2];
 const port = Number(process.argv[3] || 5173);
+const backendPort = Number(process.argv[4] || 8000);
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -21,7 +24,22 @@ const MIME = {
   '.txt': 'text/plain; charset=utf-8',
 };
 
-const server = http.createServer((req, res) => {
+function proxyToBackend(req, res) {
+  const proxyReq = http.request(
+    { host: '127.0.0.1', port: backendPort, path: req.url, method: req.method, headers: req.headers },
+    (proxyRes) => {
+      res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
+      proxyRes.pipe(res);
+    }
+  );
+  proxyReq.on('error', (err) => {
+    res.writeHead(502, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: `Backend unreachable on 127.0.0.1:${backendPort}: ${err.message}` }));
+  });
+  req.pipe(proxyReq);
+}
+
+function serveStatic(req, res) {
   try {
     const urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
     let filePath = path.normalize(path.join(dir, urlPath));
@@ -40,8 +58,16 @@ const server = http.createServer((req, res) => {
     res.writeHead(500);
     res.end('Internal error: ' + err.message);
   }
+}
+
+const server = http.createServer((req, res) => {
+  if ((req.url || '/').startsWith('/api')) {
+    proxyToBackend(req, res);
+  } else {
+    serveStatic(req, res);
+  }
 });
 
 server.listen(port, '127.0.0.1', () => {
-  console.log(`Static dashboard server on http://127.0.0.1:${port}`);
+  console.log(`Static dashboard server on http://127.0.0.1:${port} (proxying /api to :${backendPort})`);
 });

@@ -97,7 +97,7 @@ function start() {
     const out = openLog('frontend.log');
     const pid = spawnDetached(
       process.execPath,
-      [path.join(__dirname, 'static-server.js'), frontendDir, String(FRONTEND_PORT)],
+      [path.join(__dirname, 'static-server.js'), frontendDir, String(FRONTEND_PORT), String(BACKEND_PORT)],
       { cwd: paths.installDir(), out, err: out }
     );
     state.frontend = pid;

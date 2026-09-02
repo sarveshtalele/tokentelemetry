@@ -15,28 +15,45 @@ a local SQLite database; nothing is sent anywhere else.
 
 ## Quick start (install locally)
 
-`tokentelemetry` isn't published to the npm registry — it's not a bare `npx tokentelemetry`
-you can run from just anywhere. Instead, build the CLI package straight from this repo and
-install it once, on **Windows, macOS, or Linux**:
+`tokentelemetry` isn't published to the npm registry, so there's no bare `npx tokentelemetry`
+to run from just anywhere yet. Instead, clone this repo and run the one-shot setup script —
+it works the same way on **Windows, macOS, and Linux**:
 
 ```bash
 git clone https://github.com/sarveshtalele/tokentelemetry.git
-cd tokentelemetry/cli
-npm pack --pack-destination /tmp          # builds the package (vendors backend + built dashboard)
-npm install -g /tmp/tokentelemetry-1.0.0.tgz   # installs the `tokentelemetry` command globally
+cd tokentelemetry
+node cli/setup.js
 ```
 
-From then on, `tokentelemetry` is a normal command on your `PATH` — no repo checkout needed
-to run it, and no further `npm pack`/`npm install` unless you pull new changes and want to
-rebuild:
+That single command:
+1. **Detects your system** — OS/arch, Node, Python, and whether `uv` is available.
+2. **Builds and installs `tokentelemetry` globally** (`npm pack` + `npm install -g`), so it's
+   a normal command on your `PATH` afterward — no repo checkout needed to run it again.
+3. **Configures the app** — copies files to `~/.tokentelemetry`, sets up a Python env
+   (preferring `uv`), and wires the Claude Code hooks into `~/.claude/settings.json`.
+4. **Only then** hands you an interactive menu:
+   ```
+   What would you like to do?
+     1) Start the dashboard
+     2) Stop the dashboard
+     3) Show status
+     4) Uninstall (remove Claude Code hooks)
+     5) Exit
+   ```
 
-```bash
-tokentelemetry install    # copies the app to ~/.tokentelemetry, sets up a Python env,
-                           # wires the Claude Code hooks into ~/.claude/settings.json
-tokentelemetry start      # starts everything
-```
+Pick **1**, then open **http://127.0.0.1:5173**.
 
-Then open **http://127.0.0.1:5173**.
+Requires Node.js 18+ and Python 3.9+ on `PATH` — or [`uv`](https://docs.astral.sh/uv/), which
+is used automatically when present (faster env setup). `cli/setup.js` checks for these up
+front and tells you what's missing rather than failing partway through.
+
+**Picked up a new commit?** `git pull`, then run `node cli/setup.js` again from the repo —
+it rebuilds and reinstalls the global command before showing the menu.
+
+### After the first run
+
+Once step 2 above has run at least once, `tokentelemetry` is on your `PATH` — you don't need
+the repo checkout or `node cli/setup.js` for day-to-day use, just the commands directly:
 
 | Command | What it does |
 |---|---|
@@ -46,13 +63,7 @@ Then open **http://127.0.0.1:5173**.
 | `tokentelemetry stop` | Stop everything started by `start` |
 | `tokentelemetry uninstall [--purge]` | Remove the Claude Code hooks (`--purge` also deletes app files) |
 
-Requires Node.js 18+ and Python 3.9+ on `PATH` — or [`uv`](https://docs.astral.sh/uv/), which
-is used automatically when present (faster env setup). Full details:
-[`cli/README.md`](cli/README.md).
-
-**Picked up a new commit and want the CLI rebuilt?** Re-run the `npm pack` /
-`npm install -g` step above from a fresh `git pull` — that overwrites the global command with
-the new build.
+Full details: [`cli/README.md`](cli/README.md).
 
 ## Running it every time
 
