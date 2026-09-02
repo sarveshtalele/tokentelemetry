@@ -34,17 +34,18 @@ configuration.
 3. [Screenshots](#screenshots)
 4. [Quick Start (Install Locally)](#quick-start-install-locally)
 5. [Running It Every Time](#running-it-every-time)
-6. [How Data Collection Works](#how-data-collection-works)
-7. [Architecture](#architecture)
-8. [Documentation](#documentation)
-9. [Security](#security)
-10. [Configuration](#configuration)
-11. [Manual / Development Setup](#manual--development-setup)
-12. [Project Structure](#project-structure)
-13. [Testing](#testing)
-14. [Design System](#design-system)
-15. [Contributing & Repository Automation](#contributing--repository-automation)
-16. [License](#license)
+6. [User Guide](#user-guide)
+7. [How Data Collection Works](#how-data-collection-works)
+8. [Architecture](#architecture)
+9. [Documentation](#documentation)
+10. [Security](#security)
+11. [Configuration](#configuration)
+12. [Manual / Development Setup](#manual--development-setup)
+13. [Project Structure](#project-structure)
+14. [Testing](#testing)
+15. [Design System](#design-system)
+16. [Contributing & Repository Automation](#contributing--repository-automation)
+17. [License](#license)
 
 ## Why
 
@@ -76,51 +77,30 @@ anywhere.
 <table>
 <tr>
 <td width="50%">
-<img src="docs/screenshots/dashboard-light.png" alt="Global dashboard, light mode">
-<p align="center"><sub>Global dashboard — light mode</sub></p>
-</td>
-<td width="50%">
 <img src="docs/screenshots/dashboard-dark.png" alt="Global dashboard, dark mode">
-<p align="center"><sub>Global dashboard — dark mode</sub></p>
+<p align="center"><sub>Global dashboard — every project, all time by default</sub></p>
 </td>
-</tr>
-<tr>
 <td width="50%">
 <img src="docs/screenshots/project-detail-dark.png" alt="Project detail view with per-project skill and MCP usage">
 <p align="center"><sub>Project detail — top skill / MCP server / hook</sub></p>
 </td>
-<td width="50%">
-<img src="docs/screenshots/tools-dark.png" alt="Tool telemetry view with call distribution chart">
-<p align="center"><sub>Tool telemetry — call distribution</sub></p>
-</td>
-</tr>
-<tr>
-<td width="50%">
-<img src="docs/screenshots/requests-dark.png" alt="Requests explorer with per-request token usage">
-<p align="center"><sub>Requests — trace explorer</sub></p>
-</td>
-<td width="50%">
-<img src="docs/screenshots/reports-dark.png" alt="Reports page for exporting usage and project data as CSV or JSON">
-<p align="center"><sub>Reports — CSV / JSON export</sub></p>
-</td>
-</tr>
-<tr>
-<td width="50%">
-<img src="docs/screenshots/settings-dark.png" alt="Telemetry settings page with collector configuration and table counts">
-<p align="center"><sub>Settings — collector configuration</sub></p>
-</td>
-<td width="50%">
-<img src="docs/screenshots/about-dark.png" alt="About page explaining exact versus estimated attribution">
-<p align="center"><sub>About — exact vs. estimated attribution</sub></p>
-</td>
 </tr>
 </table>
 
+More pages (Requests, Tools, Reports, Settings, About) are in
+[`docs/screenshots/`](docs/screenshots).
+
 ## Quick Start (Install Locally)
 
-`tokentelemetry` isn't published to the npm registry, so there's no bare `npx tokentelemetry`
-to run from just anywhere yet. Instead, clone this repo and run the one-shot setup script —
-it works the same way on **Windows, macOS, and Linux**:
+`tokentelemetry` isn't published to the npm registry yet, so there's no bare
+`npx tokentelemetry` to run from just anywhere yet — install it from a checkout of this repo
+instead, using npm's own package/install commands. It works the same way on **Windows, macOS,
+and Linux**.
+
+### Option A — one-shot setup script (recommended)
+
+Wraps the npm steps below plus the app configuration (Python env, Claude Code hooks) into one
+command:
 
 ```bash
 git clone https://github.com/sarveshtalele/tokentelemetry.git
@@ -130,8 +110,9 @@ node cli/setup.js
 
 That single command:
 1. **Detects your system** — OS/arch, Node, Python, and whether `uv` is available.
-2. **Builds and installs `tokentelemetry` globally** (`npm pack` + `npm install -g`), so it's
-   a normal command on your `PATH` afterward — no repo checkout needed to run it again.
+2. **Builds and installs `tokentelemetry` globally** (`npm pack` + `npm install -g`, see
+   Option B below for the same steps run by hand), so it's a normal command on your `PATH`
+   afterward — no repo checkout needed to run it again.
 3. **Configures the app** — copies files to `~/.tokentelemetry`, sets up a Python env
    (preferring `uv`), and wires the Claude Code hooks into `~/.claude/settings.json`.
 4. **Only then** hands you an interactive menu:
@@ -148,6 +129,30 @@ Pick **1** — your browser opens to **http://127.0.0.1:5173** automatically onc
 dashboard is actually up (set `TOKENTELEMETRY_NO_OPEN=1` to skip that). If something fails
 to start (e.g. the port's already taken by something else), `start` says exactly what and
 where to look — it doesn't just claim success.
+
+### Option B — the npm commands directly
+
+Exactly what `node cli/setup.js` runs for you in step 2 above, if you'd rather script it
+yourself or skip the interactive menu:
+
+```bash
+git clone https://github.com/sarveshtalele/tokentelemetry.git
+cd tokentelemetry/cli
+
+npm pack --pack-destination /tmp             # builds the package (vendors backend/frontend/hooks)
+npm install -g /tmp/tokentelemetry-1.0.0.tgz # installs the "tokentelemetry" command globally
+
+tokentelemetry install                        # Python env + Claude Code hooks
+tokentelemetry start                          # backend + daemon + dashboard
+```
+
+Once `tokentelemetry` is installed globally this way, every command in
+[After the first run](#after-the-first-run) below works exactly the same as with Option A —
+Option A is just a convenience wrapper around these same `npm pack`/`npm install -g` commands.
+
+**If this ever gets published to the npm registry**, both options above collapse to a single
+`npx tokentelemetry` — no local build or `git clone` needed at all. It isn't published yet, so
+that command doesn't work today; this section will be updated the moment it is.
 
 Requires Node.js 18+ and Python 3.9+ on `PATH` — or [`uv`](https://docs.astral.sh/uv/), which
 is used automatically when present (faster env setup). `cli/setup.js` checks for these up
@@ -228,6 +233,51 @@ clearly rather than pretending to succeed; the unit file above still gets writte
 picked up manually once a user systemd session is available.
 
 </details>
+
+## User Guide
+
+The full page-by-page guide lives in [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md); this is the
+condensed version — what to do the first time, and what a normal day looks like afterward.
+
+### A typical day
+
+1. **Nothing to do, if autostart is on.** With `tokentelemetry autostart enable` set up once
+   (see [Running It Every Time](#running-it-every-time)), the backend, daemon, and dashboard
+   are already running by the time you open your terminal — data capture doesn't wait for you
+   to remember to start anything.
+2. **Otherwise, `tokentelemetry start` once per session** (or per reboot) — that's the whole
+   daily routine. It's safe to run again if it's already running; it just says so.
+3. **Use Claude Code normally.** Nothing about the tool itself needs configuring per-project —
+   every project is auto-detected from the working directory Claude Code was run in.
+4. **Check the dashboard whenever you want a picture of usage** — `http://127.0.0.1:5173`, or
+   `tokentelemetry status` for a quick text summary without opening a browser at all.
+5. **`tokentelemetry stop`** when you're done, if you're not relying on autostart and want to
+   free the ports/processes. Nothing about stopping it loses data — everything already
+   collected stays in the local SQLite database, and the live hooks keep writing basic events
+   even while the dashboard/daemon are stopped, ready to be picked up on the next reconcile.
+
+### The pages, at a glance
+
+| Page | Route | What it's for |
+|---|---|---|
+| Dashboard | `/` | Global command center — totals across every project, all time by default |
+| Projects | `/projects`, `/projects/:id` | Per-project inventory, with top skill/MCP server/hook |
+| Requests | `/requests`, `/requests/:id` | Every request with exact token usage; open any one for the full, untruncated prompt and response |
+| Tools / Skills / Sessions / Clients | `/tools`, `/skills`, `/sessions`, `/clients` | Dedicated breakdowns for each telemetry dimension |
+| MCP & Plugins | `/mcp-plugins` | MCP tool calls grouped by server, plus installed plugin usage |
+| Reports | `/reports` | Export usage or per-project data as CSV or JSON, filtered by project/date — see [Export Reports](docs/USER_GUIDE.md#export-reports) |
+| Settings | `/settings` | Collector status, database path/size, table counts, manual "Reconcile now" |
+| About | `/about` | What this tool tracks, and the exact-vs-estimated distinction below |
+
+### Exact vs. estimated, in one paragraph
+
+Every number carries a badge. **Exact** (green) numbers come straight from the Claude API's
+own usage report for that request. **Estimated** (amber) numbers — per-file or per-tool
+breakdowns — are a heuristic, since the API only reports usage per request, not per file: an
+exact total gets divided across the tool calls and file paths active near it in the
+transcript. Treat estimated numbers as good for finding hotspots, not as a precise bill. Full
+explanation, with examples: [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md#exact-vs-estimated-data)
+or the in-app `/about` page.
 
 ## How Data Collection Works
 
