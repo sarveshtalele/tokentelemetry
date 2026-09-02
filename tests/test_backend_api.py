@@ -131,3 +131,49 @@ def test_project_attribution_summary_unknown_project(client):
     assert resp.status_code == 200
     data = resp.json()["data"]
     assert data == {"top_skill": None, "top_mcp_server": None, "top_hook": None}
+
+
+def test_reports_preview_requests(client):
+    resp = client.get("/api/v1/reports/preview?kind=requests")
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert data["row_count"] >= 1
+    assert "total_tokens" in data["columns"]
+    assert data["sample"][0]["project"] == "demo-project"
+
+
+def test_reports_preview_projects_filters_by_project(client):
+    resp = client.get("/api/v1/reports/preview?kind=projects&project=demo-project")
+    assert resp.status_code == 200
+    data = resp.json()["data"]
+    assert data["row_count"] == 1
+    assert data["sample"][0]["project"] == "demo-project"
+    assert data["sample"][0]["top_tool"] in ("mcp__github__search_issues", "mcp__github__create_pr", "mcp__linear__list_issues")
+
+
+def test_reports_preview_unknown_project_is_empty(client):
+    resp = client.get("/api/v1/reports/preview?kind=requests&project=does-not-exist")
+    assert resp.status_code == 200
+    assert resp.json()["data"]["row_count"] == 0
+
+
+def test_reports_export_csv(client):
+    resp = client.get("/api/v1/reports/export?kind=requests&format=csv")
+    assert resp.status_code == 200
+    assert resp.headers["content-type"].startswith("text/csv")
+    assert "attachment" in resp.headers["content-disposition"]
+    assert "demo-project" in resp.text
+    assert resp.text.splitlines()[0].startswith("event_time,project,session_id")
+
+
+def test_reports_export_json(client):
+    resp = client.get("/api/v1/reports/export?kind=projects&format=json")
+    assert resp.status_code == 200
+    assert resp.headers["content-type"].startswith("application/json")
+    body = resp.json()
+    assert any(row["project"] == "demo-project" for row in body)
+
+
+def test_reports_export_rejects_unknown_kind(client):
+    resp = client.get("/api/v1/reports/export?kind=bogus")
+    assert resp.status_code == 422

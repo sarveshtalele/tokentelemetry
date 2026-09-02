@@ -125,3 +125,12 @@ export interface ApiEnvelope<T> {
   data: T;
   meta?: { total: number; page: number; page_size: number };
 }
+
+export type ReportKind = 'requests' | 'projects';
+export type ReportFormat = 'csv' | 'json';
+
+export interface ReportPreview {
+  row_count: number;
+  columns: string[];
+  sample: Record<string, unknown>[];
+}

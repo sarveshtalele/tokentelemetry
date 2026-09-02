@@ -9,6 +9,7 @@ import {
   IconChat,
   IconMonitor,
   IconPlug,
+  IconDownload,
   IconSettings,
   IconAbout,
   IconChevronLeft,
@@ -24,6 +25,7 @@ const NAV_ITEMS = [
   { to: '/sessions', label: 'Sessions', Icon: IconChat },
   { to: '/clients', label: 'Clients', Icon: IconMonitor },
   { to: '/mcp-plugins', label: 'MCP & Plugins', Icon: IconPlug },
+  { to: '/reports', label: 'Reports', Icon: IconDownload },
   { to: '/about', label: 'About', Icon: IconAbout },
 ];
 

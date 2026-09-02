@@ -11,6 +11,7 @@ import { Skills } from './pages/Skills';
 import { Sessions } from './pages/Sessions';
 import { Clients } from './pages/Clients';
 import { McpPlugins } from './pages/McpPlugins';
+import { Reports } from './pages/Reports';
 import { Settings } from './pages/Settings';
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/sessions" element={<Sessions />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/mcp-plugins" element={<McpPlugins />} />
+          <Route path="/reports" element={<Reports />} />
           <Route path="/settings" element={<Settings />} />
         </Route>
       </Routes>

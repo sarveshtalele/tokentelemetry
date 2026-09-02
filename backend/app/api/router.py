@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from .routes import usage, projects, tools, skills, sessions, events, clients
-from .routes import attributions, mcp, plugins, settings
+from .routes import attributions, mcp, plugins, settings, reports
 
 api_router = APIRouter()
 
@@ -15,3 +15,4 @@ api_router.include_router(attributions.router, prefix="/attributions", tags=["at
 api_router.include_router(mcp.router, prefix="/mcp", tags=["mcp"])
 api_router.include_router(plugins.router, prefix="/plugins", tags=["plugins"])
 api_router.include_router(settings.router, prefix="/settings", tags=["settings"])
+api_router.include_router(reports.router, prefix="/reports", tags=["reports"])
