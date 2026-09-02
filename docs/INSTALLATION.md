@@ -34,7 +34,33 @@ what's missing rather than failing partway through the install.
 
 ## Quick install (all platforms)
 
-The same three commands work identically on Windows, macOS, and Linux:
+Published on the npm registry — the same command works identically on Windows, macOS, and
+Linux, no `git clone` required:
+
+```bash
+npx tokentelemetry
+```
+
+That one command sets up a Python virtual environment (`uv venv` if [`uv`](https://docs.astral.sh/uv/)
+is available, otherwise `python3 -m venv`), installs the backend's Python dependencies,
+merges five hook entries into Claude Code's own `~/.claude/settings.json`
+(`SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `Stop` — safe to run more
+than once, entries are de-duplicated by command string rather than appended again), and then
+starts the backend, daemon, and dashboard. Your default browser opens to
+`http://127.0.0.1:5173` automatically once the dashboard is actually reachable (not just "the
+process was launched"); set `TOKENTELEMETRY_NO_OPEN=1` in your environment first if you'd
+rather open it yourself.
+
+For daily use, install it globally instead of re-resolving the package over the network on
+every run:
+
+```bash
+npm install -g tokentelemetry
+tokentelemetry
+```
+
+<details>
+<summary>Installing from source instead (for contributing, or a commit not yet published)</summary>
 
 ```bash
 git clone https://github.com/sarveshtalele/tokentelemetry.git
@@ -47,27 +73,18 @@ This one command:
 1. **Detects your system** — OS/architecture, Node and Python versions,
    and whether `uv` is available — and stops early with a clear message if
    something required is missing, instead of failing halfway through.
-2. **Builds and installs the `tokentelemetry` command globally**
-   (`npm pack` followed by `npm install -g` of the resulting tarball), so
-   it becomes a normal command on your `PATH` — no repo checkout is needed
+2. **Builds and installs the `tokentelemetry` command globally from this checkout**
+   (`npm pack` followed by `npm install -g` of the resulting tarball, not the registry
+   package), so it becomes a normal command on your `PATH` — no repo checkout is needed
    to run it again afterward.
 3. **Configures the app**: copies the backend, telemetry collector, and
    the pre-built dashboard into `~/.tokentelemetry` (override with the
-   `TOKENTELEMETRY_HOME` environment variable), creates a Python virtual
-   environment there (`uv venv` if available, otherwise
-   `python3 -m venv`), installs the backend's Python dependencies into it,
-   and merges five hook entries into Claude Code's own
-   `~/.claude/settings.json` (`SessionStart`, `UserPromptSubmit`,
-   `PreToolUse`, `PostToolUse`, `Stop`) — safe to run more than once, hook
-   entries are de-duplicated by command string rather than appended again.
+   `TOKENTELEMETRY_HOME` environment variable), sets up the Python env, and wires the
+   Claude Code hooks — same as above.
 4. **Hands you an interactive menu** to start the dashboard, stop it,
    check status, enable/disable autostart at login, or uninstall.
 
-Pick **Start the dashboard** — your default browser opens to
-`http://127.0.0.1:5173` automatically once the dashboard is actually
-reachable (not just "the process was launched"); set
-`TOKENTELEMETRY_NO_OPEN=1` in your environment first if you'd rather open
-it yourself.
+</details>
 
 ## Windows-specific notes
 
@@ -142,6 +159,18 @@ whether it's actually answering requests. If either check fails, it tells
 you exactly which log file under `~/.tokentelemetry/logs/` to look at.
 
 ## Updating
+
+Installed globally via npm:
+
+```bash
+npm install -g tokentelemetry@latest
+tokentelemetry install   # re-applies the Python env + hooks, safe to re-run
+```
+
+Running via `npx tokentelemetry` instead always resolves the latest published version on its
+own — nothing to update manually.
+
+Installed from a source checkout:
 
 ```bash
 cd tokentelemetry

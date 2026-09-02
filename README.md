@@ -5,13 +5,14 @@
 ### *The local-first token, tool, skill & MCP observability console for Claude Code*
 
 <p>
+  <img src="https://img.shields.io/npm/v/tokentelemetry.svg" alt="npm version">
   <img src="https://img.shields.io/badge/Data-100%25%20Local--first-brightgreen" alt="Local-first">
   <img src="https://img.shields.io/badge/Attribution-Exact%20%2B%20Estimated%2C%20Always%20Labeled-blue" alt="Attribution">
   <img src="https://github.com/sarveshtalele/tokentelemetry/actions/workflows/ci.yml/badge.svg" alt="CI status">
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
 </p>
 
-Installs as a single **`tokentelemetry`** command. Works with **Claude Code**, **Cursor**,
+Install with a single `npx tokentelemetry`. Works with **Claude Code**, **Cursor**,
 **VS Code**, **JetBrains**, and **Windsurf** — auto-classified, zero configuration.
 
 </div>
@@ -73,9 +74,30 @@ More pages in [`docs/screenshots/`](docs/screenshots).
 
 ## Install
 
-Not on the npm registry yet, so there's no `npx tokentelemetry` shortcut — install from a
-checkout. Works the same on **Windows, macOS, and Linux**; requires Node.js 18+ and Python
-3.9+ (or [`uv`](https://docs.astral.sh/uv/), used automatically when present).
+Published on the npm registry as [`tokentelemetry`](https://www.npmjs.com/package/tokentelemetry).
+Works the same on **Windows, macOS, and Linux**; requires Node.js 18+ and Python 3.9+ (or
+[`uv`](https://docs.astral.sh/uv/), used automatically when present).
+
+```bash
+npx tokentelemetry
+```
+
+That one command sets up a Python virtual environment, wires the Claude Code hooks into
+`~/.claude/settings.json`, and starts the backend, daemon, and dashboard —
+`http://127.0.0.1:5173` opens automatically once it's actually up.
+
+For daily use, install it globally instead so it doesn't re-resolve the package over the
+network on every run:
+
+```bash
+npm install -g tokentelemetry
+tokentelemetry            # install (first run) + start, same as npx above
+```
+
+Per-OS notes and troubleshooting: **[Installation Guide](docs/INSTALLATION.md)**.
+
+<details>
+<summary>Installing from source instead (for contributing, or before a release is published)</summary>
 
 ```bash
 git clone https://github.com/sarveshtalele/tokentelemetry.git
@@ -83,12 +105,11 @@ cd tokentelemetry
 node cli/setup.js
 ```
 
-That command builds and installs the `tokentelemetry` command globally (`npm pack` +
-`npm install -g` under the hood, in `cli/`), sets up a Python virtual environment, wires the
-Claude Code hooks into `~/.claude/settings.json`, then drops you into a menu — pick **Start
-the dashboard**. Your browser opens to `http://127.0.0.1:5173` once it's actually up.
+Builds and installs the `tokentelemetry` command globally from this checkout (`npm pack` +
+`npm install -g`, in `cli/`) instead of pulling the published package, then does the same
+setup + interactive menu. See [Development](#development).
 
-Per-OS notes and troubleshooting: **[Installation Guide](docs/INSTALLATION.md)**.
+</details>
 
 ## Run it daily
 
@@ -125,18 +146,22 @@ Data capture doesn't depend on any of this being on — see [How it works](#how-
 ## Update
 
 ```bash
-git pull
-node cli/setup.js
+npm install -g tokentelemetry@latest   # if installed globally
+tokentelemetry install                 # re-applies the Python env + hooks (safe to re-run)
 ```
 
-Rebuilds and reinstalls the global command from the latest commit.
+Running via `npx tokentelemetry` instead always resolves the latest published version on its
+own — nothing to update manually.
+
+Installed from source? `git pull && node cli/setup.js` rebuilds and reinstalls from the
+checkout.
 
 ## Uninstall / delete
 
 ```bash
 tokentelemetry uninstall            # remove Claude Code hooks only, keep your data
 tokentelemetry uninstall --purge    # remove hooks AND delete ~/.tokentelemetry (all data)
-npm uninstall -g tokentelemetry     # remove the global command itself
+npm uninstall -g tokentelemetry     # remove the global command itself, if installed that way
 ```
 
 ## User Guide
