@@ -108,9 +108,25 @@ async def export_report(
     buf = io.StringIO()
     writer = csv.DictWriter(buf, fieldnames=columns)
     writer.writeheader()
-    writer.writerows(rows)
+    writer.writerows(_escape_formulas(row) for row in rows)
     return StreamingResponse(
         iter([buf.getvalue()]),
         media_type="text/csv",
         headers=headers,
     )
+
+
+_FORMULA_LEAD_CHARS = ("=", "+", "-", "@", "\t", "\r")
+
+
+def _escape_formulas(row: dict) -> dict:
+    """Prefix any cell that would be interpreted as a formula by
+    Excel/Sheets (leading =, +, -, @) with a single quote. Prompt/response
+    text and project/session names come from Claude Code transcripts --
+    untrusted enough that a crafted prompt could otherwise turn a CSV
+    export into a formula/DDE injection payload when opened in a
+    spreadsheet app."""
+    return {
+        k: ("'" + v if isinstance(v, str) and v.startswith(_FORMULA_LEAD_CHARS) else v)
+        for k, v in row.items()
+    }

@@ -177,3 +177,26 @@ def test_reports_export_json(client):
 def test_reports_export_rejects_unknown_kind(client):
     resp = client.get("/api/v1/reports/export?kind=bogus")
     assert resp.status_code == 422
+
+
+def test_reports_export_csv_escapes_formula_leading_cells(client):
+    conn = connect()
+    conn.execute(
+        """INSERT INTO usage(
+            event_time,session_id,project,cwd,client,model,provider,transcript_path,transcript_line,
+            input_tokens,output_tokens,cache_read_tokens,cache_write_tokens,total_tokens,cost_usd,
+            prompt_preview,response_preview,prompt_full,response_full
+        ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (
+            "2024-01-02T00:00:00Z", "sess-formula", "demo-project", "/tmp/demo", "vscode", "claude-x",
+            "anthropic", "/tmp/formula.jsonl", 1, 1, 1, 0, 0, 2, 0.0,
+            "=cmd|'/c calc'!A1", "short response", "=cmd|'/c calc'!A1", "y",
+        ),
+    )
+    conn.commit()
+    conn.close()
+
+    resp = client.get("/api/v1/reports/export?kind=requests&format=csv")
+    assert resp.status_code == 200
+    assert ",=cmd|" not in resp.text  # unescaped: would be a live formula in a spreadsheet
+    assert ",'=cmd|" in resp.text  # escaped: leading quote neutralizes it
