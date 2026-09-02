@@ -26,3 +26,13 @@ tests/__pycache__/
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# Secrets / local env
+.env
+.env.local
+.env.*.local
+.npmrc
+*.pem
+*.key
+*.p12
+credentials.json
