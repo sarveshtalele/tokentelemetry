@@ -13,6 +13,5 @@ if not exist "frontend\node_modules" (
 )
 start "Claude Telemetry Backend" .venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --app-dir backend
 start "Claude Telemetry UI (React)" cmd /c "cd frontend && npm run dev"
-start "Claude Telemetry UI (static fallback)" .venv\Scripts\python.exe -m http.server 8080 --directory static-ui
 timeout /t 3 >nul
 start http://localhost:5173

@@ -137,12 +137,10 @@ cd backend && python run.py                # API on :8000
 cd frontend && npm install && npm run dev   # React UI on :5173
 ```
 
-`start_dashboard.bat` (Windows) does both, plus a reconcile pass. A lighter static
-HTML/JS fallback — same pages, no Node required — lives in [`static-ui/`](static-ui)
-(`static-ui/index.html`, `static-ui/assets/app.js`); serve it with
-`python -m http.server 8080 --directory static-ui` if you'd rather skip the npm toolchain.
-Opening either UI via `file://` will not work — the browser blocks the cross-origin API
-fetch.
+`start_dashboard.bat` (Windows) does both, plus a reconcile pass. There is no separate static
+HTML fallback — the React app in `frontend/` is the one real frontend, in dev mode here and
+as the built bundle the CLI serves in production. Opening it via `file://` will not work — the
+browser blocks the cross-origin API fetch; always serve it (`npm run dev`, or the CLI).
 
 ### Pages
 - `/` — global command center · `/projects` — project inventory · `/projects/:id` — project
