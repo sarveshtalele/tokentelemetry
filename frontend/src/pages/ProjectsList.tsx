@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
+import { useLive } from '../context/LiveContext';
 import { getProjects } from '../api/projects';
 import { ProjectCard } from '../components/cards/ProjectCard';
 import { Button } from '../components/ui/Button';
@@ -7,13 +8,14 @@ import { IconRefresh } from '../components/ui/Icons';
 import { PageHead, ErrorPanel } from './GlobalDashboard';
 
 export function ProjectsList() {
-  const { data: projects = [], loading, error, reload } = useApi(() => getProjects(), []);
+  const { version: liveVersion } = useLive();
+  const { data: projects = [], loading, error, reload } = useApi(() => getProjects(), [liveVersion]);
   const [q, setQ] = useState('');
 
   const filtered = useMemo(() => projects.filter((p) => p.project.toLowerCase().includes(q.toLowerCase())), [projects, q]);
 
   if (error) return <ErrorPanel message={error.message} />;
-  if (loading) return <div className="p-10 text-center text-ink-soft">Loading projects…</div>;
+  if (loading && projects.length === 0) return <div className="p-10 text-center text-ink-soft">Loading projects…</div>;
 
   return (
     <div className="space-y-6">

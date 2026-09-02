@@ -1,6 +1,7 @@
 import { useLocation, Link } from 'react-router-dom';
 import { IconRefresh, IconSun, IconMoon } from '../ui/Icons';
 import { useTheme } from '../../hooks/useTheme';
+import { useLive } from '../../context/LiveContext';
 
 const LABELS: Record<string, string> = {
   projects: 'Projects',
@@ -18,6 +19,7 @@ export function TopBar() {
   const loc = useLocation();
   const parts = loc.pathname.split('/').filter(Boolean);
   const { theme, toggle } = useTheme();
+  const { connected } = useLive();
   return (
     <header className="h-16 bg-surface/90 backdrop-blur border-b border-line flex items-center justify-between px-7 sticky top-0 z-10">
       <div className="flex items-center gap-2 text-sm text-ink-soft">
@@ -57,8 +59,14 @@ export function TopBar() {
         >
           <IconRefresh width={14} height={14} /> Refresh
         </button>
-        <span className="flex items-center gap-1.5 bg-accent text-on-accent rounded-md px-3 py-2 text-sm font-semibold">
-          <span className="w-1.5 h-1.5 rounded-full bg-on-accent animate-pulse" /> Live
+        <span
+          title={connected ? 'Connected — new data refreshes automatically as it arrives' : 'Not connected — reconnecting…'}
+          className={`flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-semibold ${
+            connected ? 'bg-accent text-on-accent' : 'bg-surface-muted text-ink-soft border border-line'
+          }`}
+        >
+          <span className={`w-1.5 h-1.5 rounded-full ${connected ? 'bg-on-accent animate-pulse' : 'bg-ink-soft'}`} />
+          {connected ? 'Live' : 'Reconnecting…'}
         </span>
       </div>
     </header>
