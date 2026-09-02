@@ -20,7 +20,7 @@ is it tested, and does it match the existing style.
 
 ## Where things live
 
-See [Project structure](README.md#project-structure) in the README for the full layout.
+See [Development](README.md#development) in the README for the full layout.
 The one thing worth knowing up front: **there is exactly one schema and one
 collector/reconcile implementation**, in `telemetry/`. `backend/` imports it directly
 (see the `sys.path` bootstrap in `backend/app/main.py`) rather than keeping its own copy —

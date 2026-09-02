@@ -214,5 +214,5 @@ pass.
 
 If you're working on the app itself rather than just running it, skip the
 CLI entirely and run the pieces directly — see
-[README: Manual / Development Setup](../README.md#manual--development-setup)
+[README: Development](../README.md#development)
 for the exact commands.
