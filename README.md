@@ -1,17 +1,68 @@
 # Claude Telemetry Enterprise
 
-Local-first observability console for [Claude Code](https://claude.com/claude-code): exact
-per-request token usage, plus estimated tool/file/skill attribution — tools, MCP servers,
-hooks, sessions, and projects, all in one dashboard. Everything runs on your machine against
-a local SQLite database; nothing is sent anywhere else.
+**Local-first observability for [Claude Code](https://claude.com/claude-code).** Exact
+per-request token usage plus estimated tool/file/skill attribution — projects, sessions,
+tools, skills, MCP servers, and clients — in one dashboard that never leaves your machine.
 
-- **Exact vs. estimated** — token counts come straight from the Claude API; per-file/tool
-  attribution is a clearly-labeled heuristic (see the in-app **About** page, or `DESIGN.md`).
-- **Full prompt/response inspection** — drill into any request and open the complete,
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%E2%89%A518-339933?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Python](https://img.shields.io/badge/python-%E2%89%A53.9-3776AB?logo=python&logoColor=white)](https://www.python.org)
+[![React](https://img.shields.io/badge/frontend-React%20%2B%20Vite%20%2B%20TypeScript-61DAFB?logo=react&logoColor=white)](frontend)
+[![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi&logoColor=white)](backend)
+[![Local-first](https://img.shields.io/badge/data-local--first%20SQLite-brightgreen)](#how-data-collection-works)
+
+<p align="center">
+  <img src="docs/screenshots/dashboard-dark.png" alt="Usage overview dashboard, dark mode" width="100%">
+</p>
+
+## Contents
+
+- [Why](#why)
+- [Features](#features)
+- [Quick start](#quick-start-install-locally)
+- [Running it every time](#running-it-every-time)
+- [How data collection works](#how-data-collection-works)
+- [Architecture](#architecture)
+- [Configuration](#configuration)
+- [Manual / development setup](#manual--development-setup)
+- [Project structure](#project-structure)
+- [Testing](#testing)
+- [Design system](#design-system)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Why
+
+Claude Code doesn't ship a way to see, across every project you use it in: how many tokens
+you're actually spending, which tools and skills drive that spend, which MCP servers and
+hooks are active, and where the context is going. This fills that gap — entirely on your
+own machine, against your own Claude Code session data, with no telemetry of its own sent
+anywhere.
+
+## Features
+
+- **Exact vs. estimated, always labeled.** Token counts come straight from the Claude API.
+  Per-file/tool attribution is a clearly-badged heuristic — see the in-app **About** page
+  (`/about`) for exactly how it's computed.
+- **Full prompt/response inspection.** Drill into any request and open the complete,
   untruncated prompt and response in its own page.
-- **Dark / light mode**, all-time (or custom range) data, per-project breakdowns of the
-  skills/MCP servers/hooks used most.
-- **No cost/pricing columns** in the primary UI — intentionally excluded (see `DESIGN.md`).
+- **Dark / light mode**, with a persistent toggle and OS-preference detection.
+- **All-time by default**, with a date-range filter — not capped at the last 30 days.
+- **Per-project breakdowns** of the top skill, MCP server, and hook in use.
+- **Tools, skills, MCP servers, clients, and sessions**, each with their own dedicated view.
+- **No cost/pricing columns** in the primary UI — intentionally excluded, since billing
+  depends on the plan in effect and isn't a reliable token-telemetry primitive.
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/dashboard-light.png" alt="Dashboard in light mode"></td>
+<td width="50%"><img src="docs/screenshots/dashboard-dark.png" alt="Dashboard in dark mode"></td>
+</tr>
+</table>
+
+<p align="center">
+  <img src="docs/screenshots/project-detail-dark.png" alt="Project detail view showing per-project skill and MCP usage" width="100%">
+</p>
 
 ## Quick start (install locally)
 
@@ -133,6 +184,41 @@ Data capture does **not** depend on `tokentelemetry start` being on:
    file's mtime/size, so turning the daemon off for a while and back on backfills everything
    it missed, nothing is lost.
 
+## Architecture
+
+```
+Claude Code
+   │  hooks (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop)
+   ▼
+hooks/claude-telemetry-hook.py ──► SQLite (~/.claude/telemetry/telemetry.db)
+                                          ▲
+telemetry/daemon.py  (polls, every 5s)   │
+   └─ telemetry/reconcile.py  ───────────┘  parses ~/.claude/projects/**/*.jsonl
+                                          │  (exact token usage, tool calls, skills)
+                                          ▼
+                          backend/  FastAPI  (/api/v1, /ws/live)
+                                          │
+                                          ▼
+                          frontend/  React + Vite + TypeScript + Tailwind + Recharts
+```
+
+Two independent capture paths feed the same database: the **hooks** give you live events the
+instant they happen, and **reconcile** backfills exact token usage and full transcripts from
+Claude Code's own session files — so nothing depends on the dashboard being open, and nothing
+is lost if the daemon was off for a while.
+
+## Configuration
+
+All optional; sensible defaults apply if unset.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `CLAUDE_TELEMETRY_DB` | `~/.claude/telemetry/telemetry.db` | SQLite database path |
+| `CLAUDE_CONFIG_DIR` | `~/.claude` | Claude Code config directory (where `settings.json` and `projects/` live) |
+| `TOKENTELEMETRY_HOME` | `~/.tokentelemetry` | Where the CLI installs the app |
+| `CLAUDE_TELEMETRY_INTERVAL` | `5` | Daemon poll interval, in seconds |
+| `CLAUDE_TELEMETRY_FORCE_RECONCILE` | unset | Set to `1`/`true` to force a full re-parse of every transcript on the next reconcile |
+
 ## Manual / development setup
 
 If you're working on the app itself rather than just running it, skip the CLI and run the
@@ -155,15 +241,59 @@ browser blocks the cross-origin API fetch; always serve it (`npm run dev`, or th
   `/mcp-plugins` — telemetry breakdowns · `/settings` — collector/data semantics ·
   `/about` — what "estimated attribution" means and what this tool tracks
 
-### Tests
+## Project structure
+
+```
+.
+├── backend/           FastAPI service — REST (/api/v1) + WebSocket (/ws/live) over SQLite
+│   └── app/
+│       ├── api/routes/    One module per resource (usage, projects, tools, skills, mcp, …)
+│       ├── db/             Connection + schema/migrations
+│       └── services/       Collector, reconcile, attribution logic (mirrors telemetry/)
+├── frontend/           React + Vite + TypeScript + Tailwind + Recharts dashboard
+│   └── src/
+│       ├── pages/          One component per route
+│       ├── components/     Layout, charts, data tables, shared UI
+│       ├── api/             Typed fetch wrappers per resource
+│       └── hooks/           useApi, useLiveData (WebSocket), useTheme (dark/light)
+├── telemetry/          Collector + reconcile + SQLite schema (the daemon's own copy)
+├── hooks/               claude-telemetry-hook.py — what Claude Code actually invokes
+├── cli/                 npx-style installer (`tokentelemetry` command) — see cli/README.md
+├── tests/               Backend API + reconcile pytest suite
+├── docs/                Design/implementation notes, README screenshots
+└── DESIGN.md            Design tokens + rationale (Google Labs DESIGN.md format)
+```
+
+## Testing
 
 ```bash
 uv venv .venv && uv pip install -p .venv -r backend/requirements-dev.txt   # or plain venv/pip
-.venv/bin/python -m pytest tests/test_backend_api.py
+.venv/bin/python -m pytest tests/test_backend_api.py tests/test_reconcile.py
 ```
+
+`tests/test_dashboard.py` is a Playwright suite for the legacy Streamlit prototype
+(`app.py`) and requires `pytest-playwright` plus a running Streamlit instance — it's not part
+of the primary React app's test path.
 
 ## Design system
 
 `DESIGN.md` follows the Google Labs DESIGN.md format: YAML design tokens plus ordered
 rationale sections, including light/dark theming rules and the exact-vs-estimated labeling
 convention. Source specification: https://github.com/google-labs-code/design.md
+
+## Contributing
+
+Issues and PRs are welcome. Before opening one:
+
+- Run the test suite (`Testing` above) and `cd frontend && npm run build` (type-checks +
+  builds) — both should be clean.
+- Match the existing code style: no comments unless they explain a non-obvious *why*; small,
+  focused diffs over drive-by refactors.
+- If you touch `backend/` or `telemetry/`, check both — `backend/app/db/schema.py` and
+  `telemetry/db.py` are two independent schema copies (the API server and the background
+  daemon connect through them separately) and need to stay in sync; see the comments in
+  either file for why.
+
+## License
+
+[MIT](LICENSE) — see the [`LICENSE`](LICENSE) file for the full text.
