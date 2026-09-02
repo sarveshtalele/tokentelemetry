@@ -1,0 +1,24 @@
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { fmt } from '../../lib/format';
+
+interface Props {
+  data: { day: string; tokens: number }[];
+  title?: string;
+}
+
+export function TokenTrendChart({ data, title = 'Daily token volume' }: Props) {
+  const sorted = [...data].sort((a, b) => a.day.localeCompare(b.day));
+  return (
+    <div className="bg-surface border border-line rounded-lg p-4">
+      <h3 className="text-sm font-bold mb-4">{title}</h3>
+      <ResponsiveContainer width="100%" height={250}>
+        <LineChart data={sorted}>
+          <XAxis dataKey="day" tick={{ fontSize: 10 }} minTickGap={30} />
+          <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => fmt(v)} />
+          <Tooltip formatter={(v: number) => fmt(v)} />
+          <Line type="monotone" dataKey="tokens" stroke="#6D5EF7" strokeWidth={2} dot={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}

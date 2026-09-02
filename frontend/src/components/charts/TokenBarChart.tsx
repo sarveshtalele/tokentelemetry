@@ -1,0 +1,23 @@
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { fmt } from '../../lib/format';
+
+interface Props {
+  data: { project: string; total_tokens: number }[];
+  title?: string;
+}
+
+export function TokenBarChart({ data, title = 'Usage by project' }: Props) {
+  return (
+    <div className="bg-surface border border-line rounded-lg p-4">
+      <h3 className="text-sm font-bold mb-4">{title}</h3>
+      <ResponsiveContainer width="100%" height={300}>
+        <BarChart data={data} margin={{ left: -10, right: 10 }}>
+          <XAxis dataKey="project" tick={{ fontSize: 11 }} angle={-40} textAnchor="end" height={70} interval={0} />
+          <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => fmt(v)} />
+          <Tooltip formatter={(v: number) => fmt(v)} />
+          <Bar dataKey="total_tokens" fill="#6D5EF7" radius={[4, 4, 0, 0]} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}

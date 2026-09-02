@@ -135,7 +135,7 @@ with tabs[0]:
         disp = x.copy()
         disp["total_tokens"] = disp["total_tokens"].apply(fmt_num)
         disp["cost_usd"] = disp["cost_usd"].apply(fmt_cost)
-        st.dataframe(disp, use_container_width=True, hide_index=True)
+        st.dataframe(disp, width='stretch', hide_index=True)
         st.bar_chart(x.set_index("project")["total_tokens"])
     else:
         st.info("No reconciled usage yet. Run `python -m telemetry.reconcile` or start the daemon.")
@@ -159,7 +159,7 @@ with tabs[1]:
     if not attrib.empty:
         disp = attrib.copy()
         disp["estimated_tokens"] = disp["estimated_tokens"].apply(fmt_num)
-        st.dataframe(disp, use_container_width=True, hide_index=True)
+        st.dataframe(disp, width='stretch', hide_index=True)
         cat = (attrib.groupby("category", as_index=False)["estimated_tokens"].sum()
                .sort_values("estimated_tokens", ascending=False).head(20))
         st.bar_chart(cat.set_index("category")["estimated_tokens"])
@@ -182,7 +182,7 @@ with tabs[1]:
         st.subheader("Top files / paths")
         disp = paths.copy()
         disp["estimated_tokens"] = disp["estimated_tokens"].apply(fmt_num)
-        st.dataframe(disp.head(200), use_container_width=True, hide_index=True)
+        st.dataframe(disp.head(200), width='stretch', hide_index=True)
 
 with tabs[2]:
     st.subheader("Tool activity")
@@ -192,7 +192,7 @@ with tabs[2]:
              .sort_values("calls", ascending=False))
         disp = x.copy()
         disp["calls"] = disp["calls"].apply(fmt_num)
-        st.dataframe(disp, use_container_width=True, hide_index=True)
+        st.dataframe(disp, width='stretch', hide_index=True)
         st.bar_chart(x.set_index("tool_name")["calls"])
     else:
         st.info("No tool calls recorded.")
@@ -205,11 +205,11 @@ with tabs[3]:
              .sort_values("calls", ascending=False))
         disp = x.copy()
         disp["calls"] = disp["calls"].apply(fmt_num)
-        st.dataframe(disp, use_container_width=True, hide_index=True)
+        st.dataframe(disp, width='stretch', hide_index=True)
         st.bar_chart(x.groupby("skill_name")["calls"].sum())
         st.subheader("Recent skill activations")
         st.dataframe(s.sort_values("id", ascending=False).head(200),
-                     use_container_width=True, hide_index=True)
+                     width='stretch', hide_index=True)
     else:
         st.info("No Skill activations recorded yet.")
 
@@ -230,7 +230,7 @@ with tabs[4]:
             disp[c] = disp[c].apply(fmt_num)
         disp["cost_usd"] = disp["cost_usd"].apply(fmt_cost)
         disp["interactions"] = disp["interactions"].apply(fmt_num)
-        st.dataframe(disp, use_container_width=True, hide_index=True)
+        st.dataframe(disp, width='stretch', hide_index=True)
 
 with tabs[5]:
     st.subheader("Telemetry timeline")
@@ -246,13 +246,13 @@ with tabs[5]:
         parts.append(uu[["event_time", "session_id", "project", "event_type", "detail"]])
     if parts:
         timeline = pd.concat(parts, ignore_index=True).sort_values("event_time", ascending=False)
-        st.dataframe(timeline.head(1000), use_container_width=True, hide_index=True)
+        st.dataframe(timeline.head(1000), width='stretch', hide_index=True)
 
 with tabs[6]:
     st.subheader("Raw hook events")
     if not e.empty:
         st.dataframe(e.sort_values("id", ascending=False).head(1000),
-                     use_container_width=True, hide_index=True)
+                     width='stretch', hide_index=True)
     else:
         st.info("No live hook events recorded yet.")
 
