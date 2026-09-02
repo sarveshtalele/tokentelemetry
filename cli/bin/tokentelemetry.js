@@ -5,12 +5,12 @@ const { start, stop, status } = require('../src/run');
 const HELP = `tokentelemetry — install and run the Claude Telemetry Enterprise console
 
 Usage:
-  npx tokentelemetry                 Install (if needed) and start everything
-  npx tokentelemetry install         Copy app files, set up Python env, wire Claude Code hooks
-  npx tokentelemetry start           Start the backend, telemetry daemon, and dashboard
-  npx tokentelemetry stop            Stop everything started by "start"
-  npx tokentelemetry status          Show install location, running processes, health checks
-  npx tokentelemetry uninstall       Remove the Claude Code hooks (add --purge to also delete app files)
+  tokentelemetry                 Install (if needed) and start everything
+  tokentelemetry install         Copy app files, set up Python env, wire Claude Code hooks
+  tokentelemetry start           Start the backend, telemetry daemon, and dashboard
+  tokentelemetry stop            Stop everything started by "start"
+  tokentelemetry status          Show install location, running processes, health checks
+  tokentelemetry uninstall       Remove the Claude Code hooks (add --purge to also delete app files)
 
 Environment:
   TOKENTELEMETRY_HOME   Install directory (default: ~/.tokentelemetry)

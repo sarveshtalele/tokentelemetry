@@ -61,7 +61,8 @@ the repo checkout or `node cli/setup.js` for day-to-day use, just the commands d
 | `tokentelemetry start` | Start the backend (`:8000`), telemetry daemon, and dashboard (`:5173`) |
 | `tokentelemetry status` | Show install location, running processes, and health checks |
 | `tokentelemetry stop` | Stop everything started by `start` |
-| `tokentelemetry uninstall [--purge]` | Remove the Claude Code hooks (`--purge` also deletes app files) |
+| `tokentelemetry uninstall` | Remove the Claude Code hooks (leaves app files and the database in place) |
+| `tokentelemetry uninstall --purge` | Remove the hooks **and** delete `~/.tokentelemetry` (app files + database) completely — this is the full, end-to-end teardown |
 
 Full details: [`cli/README.md`](cli/README.md).
 
@@ -137,8 +138,9 @@ cd frontend && npm install && npm run dev   # React UI on :5173
 ```
 
 `start_dashboard.bat` (Windows) does both, plus a reconcile pass. A lighter static
-HTML/JS fallback (`index.html`, `assets/app.js`, no Node required) also ships in the repo
-root — serve it with `python -m http.server 8080` if you'd rather skip the npm toolchain.
+HTML/JS fallback — same pages, no Node required — lives in [`static-ui/`](static-ui)
+(`static-ui/index.html`, `static-ui/assets/app.js`); serve it with
+`python -m http.server 8080 --directory static-ui` if you'd rather skip the npm toolchain.
 Opening either UI via `file://` will not work — the browser blocks the cross-origin API
 fetch.
 

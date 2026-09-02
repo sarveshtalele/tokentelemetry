@@ -145,10 +145,15 @@ function uninstall({ purge = false } = {}) {
     }
   }
 
-  if (purge && fs.existsSync(paths.installDir())) {
-    fs.rmSync(paths.installDir(), { recursive: true, force: true });
-    log(`Removed ${paths.installDir()}`);
-  } else {
+  const dirExists = fs.existsSync(paths.installDir());
+  if (purge) {
+    if (dirExists) {
+      fs.rmSync(paths.installDir(), { recursive: true, force: true });
+      log(`Removed ${paths.installDir()}`);
+    } else {
+      log(`Nothing to purge — ${paths.installDir()} does not exist (already removed).`);
+    }
+  } else if (dirExists) {
     log(`Left app files and the telemetry database in place at ${paths.installDir()}.`);
     log('Re-run with "tokentelemetry uninstall --purge" to remove them too.');
   }
