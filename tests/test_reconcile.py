@@ -86,6 +86,136 @@ def test_reconcile_leaves_plugin_null_for_unnamespaced_skill(tmp_path):
     assert row["plugin_name"] is None
 
 
+def test_reconcile_accumulates_all_tool_results_since_last_reply(tmp_path):
+    # Regression test: a turn following several tool calls used to lose
+    # everything but the last tool_result, because ingest_transcript kept a
+    # single `previous_user` string that later user-role lines simply
+    # overwrote. All of them should end up in prompt_full, in order.
+    lines = [
+        {
+            "type": "user",
+            "session_id": "sess-multi",
+            "cwd": "/tmp/demo",
+            "message": {"role": "user", "content": "read three files and summarize"},
+        },
+        {
+            "type": "assistant",
+            "session_id": "sess-multi",
+            "cwd": "/tmp/demo",
+            "message": {
+                "role": "assistant",
+                "content": [
+                    {"type": "tool_use", "id": "tu1", "name": "Read", "input": {"file_path": "a.txt"}},
+                    {"type": "tool_use", "id": "tu2", "name": "Read", "input": {"file_path": "b.txt"}},
+                ],
+            },
+        },
+        {
+            "type": "user",
+            "session_id": "sess-multi",
+            "cwd": "/tmp/demo",
+            "message": {
+                "role": "user",
+                "content": [{"type": "tool_result", "tool_use_id": "tu1", "content": "contents of A"}],
+            },
+        },
+        {
+            "type": "user",
+            "session_id": "sess-multi",
+            "cwd": "/tmp/demo",
+            "message": {
+                "role": "user",
+                "content": [{"type": "tool_result", "tool_use_id": "tu2", "content": "contents of B"}],
+            },
+        },
+        {
+            "type": "assistant",
+            "session_id": "sess-multi",
+            "cwd": "/tmp/demo",
+            "message": {
+                "role": "assistant",
+                "content": [{"type": "text", "text": "Here is the summary."}],
+                "model": "claude-x",
+                "usage": {"input_tokens": 5, "output_tokens": 10},
+            },
+        },
+    ]
+    p = tmp_path / "multi.jsonl"
+    p.write_text("\n".join(json.dumps(x) for x in lines), encoding="utf-8")
+
+    conn = connect(os.environ["CLAUDE_TELEMETRY_DB"])
+    ingest_transcript(conn, p)
+    conn.commit()
+    conn.row_factory = sqlite3.Row
+    row = conn.execute(
+        "SELECT prompt_full FROM usage WHERE session_id='sess-multi' AND transcript_path=?",
+        (str(p),),
+    ).fetchone()
+    conn.close()
+
+    assert row is not None
+    assert "contents of A" in row["prompt_full"]
+    assert "contents of B" in row["prompt_full"]
+    assert row["prompt_full"].index("contents of A") < row["prompt_full"].index("contents of B")
+
+
+def test_reconcile_resets_context_after_each_reply(tmp_path):
+    # The context that produced turn 1's reply must not bleed into turn 2's
+    # prompt_full once it's already been used.
+    lines = [
+        {
+            "type": "user",
+            "session_id": "sess-reset",
+            "cwd": "/tmp/demo",
+            "message": {"role": "user", "content": "first message"},
+        },
+        {
+            "type": "assistant",
+            "session_id": "sess-reset",
+            "cwd": "/tmp/demo",
+            "message": {
+                "role": "assistant",
+                "content": [{"type": "text", "text": "first reply"}],
+                "model": "claude-x",
+                "usage": {"input_tokens": 1, "output_tokens": 1},
+            },
+        },
+        {
+            "type": "user",
+            "session_id": "sess-reset",
+            "cwd": "/tmp/demo",
+            "message": {"role": "user", "content": "second message"},
+        },
+        {
+            "type": "assistant",
+            "session_id": "sess-reset",
+            "cwd": "/tmp/demo",
+            "message": {
+                "role": "assistant",
+                "content": [{"type": "text", "text": "second reply"}],
+                "model": "claude-x",
+                "usage": {"input_tokens": 1, "output_tokens": 1},
+            },
+        },
+    ]
+    p = tmp_path / "reset.jsonl"
+    p.write_text("\n".join(json.dumps(x) for x in lines), encoding="utf-8")
+
+    conn = connect(os.environ["CLAUDE_TELEMETRY_DB"])
+    ingest_transcript(conn, p)
+    conn.commit()
+    conn.row_factory = sqlite3.Row
+    rows = conn.execute(
+        "SELECT prompt_full FROM usage WHERE session_id='sess-reset' AND transcript_path=? ORDER BY id",
+        (str(p),),
+    ).fetchall()
+    conn.close()
+
+    assert len(rows) == 2
+    assert rows[0]["prompt_full"] == "first message"
+    assert rows[1]["prompt_full"] == "second message"
+
+
 def test_telemetry_db_connect_creates_prompt_full_columns_standalone(tmp_path):
     # Regression test: telemetry/db.py is a separate schema module from
     # backend/app/db/schema.py, connected to independently by the daemon/
