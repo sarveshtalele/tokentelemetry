@@ -1,10 +1,12 @@
-// Minimal static file server with SPA fallback and an /api reverse proxy to
-// the FastAPI backend (mirrors frontend/vite.config.ts's dev-server proxy,
-// which only applies to `npm run dev` — this is the production equivalent).
+// Minimal static file server with SPA fallback and /api + /ws reverse
+// proxies to the FastAPI backend (mirrors frontend/vite.config.ts's
+// dev-server proxy, which only applies to `npm run dev` — this is the
+// production equivalent).
 // Usage: node static-server.js <dir> <port> [backendPort]
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
+const net = require('net');
 
 const dir = process.argv[2];
 const port = Number(process.argv[3] || 5173);
@@ -72,6 +74,31 @@ const server = http.createServer((req, res) => {
   }
 });
 
+// WebSocket (/ws/live) needs its own proxy path -- the request/response
+// proxy above only speaks plain HTTP. Node emits 'upgrade' (not 'request')
+// for a WS handshake, so this replays it over a raw TCP socket to the
+// backend rather than going through http.request. Without this, the
+// frontend's live-connection indicator can never connect in production
+// (only dev mode's Vite proxy handles it), even though /api/* works fine.
+server.on('upgrade', (req, clientSocket, head) => {
+  if (!(req.url || '').startsWith('/ws')) {
+    clientSocket.destroy();
+    return;
+  }
+  const backendSocket = net.connect(backendPort, '127.0.0.1', () => {
+    const requestLine = `${req.method} ${req.url} HTTP/1.1\r\n`;
+    const headerLines = Object.entries(req.headers)
+      .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(', ') : v}`)
+      .join('\r\n');
+    backendSocket.write(requestLine + headerLines + '\r\n\r\n');
+    if (head && head.length) backendSocket.write(head);
+    clientSocket.pipe(backendSocket);
+    backendSocket.pipe(clientSocket);
+  });
+  backendSocket.on('error', () => clientSocket.destroy());
+  clientSocket.on('error', () => backendSocket.destroy());
+});
+
 server.listen(port, '127.0.0.1', () => {
-  console.log(`Static dashboard server on http://127.0.0.1:${port} (proxying /api to :${backendPort})`);
+  console.log(`Static dashboard server on http://127.0.0.1:${port} (proxying /api and /ws to :${backendPort})`);
 });
