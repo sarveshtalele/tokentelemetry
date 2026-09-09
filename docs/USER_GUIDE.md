@@ -2,8 +2,8 @@
 
 A page-by-page walkthrough of the dashboard: what each view shows, what
 the numbers mean, and how to get data out of the tool. For how the system
-is built, see [Architecture](ARCHITECTURE.md); for installation, see the
-main [README](../README.md#quick-start-install-locally).
+is built, see [Architecture](ARCHITECTURE.md); for installation, see
+[Installation Guide](INSTALLATION.md) or the main [README](../README.md#install).
 
 ## Contents
 
