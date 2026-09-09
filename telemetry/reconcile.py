@@ -23,7 +23,13 @@ def _skill_exists(conn, session_id, path, line, skill, tool_use_id):
     ).fetchone()
 
 def ingest_transcript(conn, path):
-    previous_user = ""
+    # Accumulates every user-role block (real user messages AND tool_result
+    # blocks -- both are sent to the API with role "user") since the last
+    # assistant reply. A turn following several tool calls previously lost
+    # everything but the last block, because this used to be a single
+    # `previous_user` string that later blocks simply overwrote -- understating
+    # exactly the kind of multi-tool-result turn that drives up context size.
+    pending_context = []
     try:
         lines = path.read_text(encoding="utf-8", errors="replace").splitlines()
     except Exception:
@@ -49,9 +55,12 @@ def ingest_transcript(conn, path):
         usage = extract_usage(obj)
 
         if role == "user" and text:
-            previous_user = text[:12000]
+            # Cap each block so one huge tool result (a full file read, a long
+            # bash log) can't crowd out everything else in the same turn.
+            pending_context.append(text[:8000])
 
         if role == "assistant" and usage["total_tokens"] > 0:
+            prompt_full = "\n\n---\n\n".join(pending_context)[:40000]
             conn.execute(
                 """INSERT OR IGNORE INTO usage(
                     event_time,session_id,project,cwd,client,model,provider,transcript_path,
@@ -64,10 +73,13 @@ def ingest_transcript(conn, path):
                     str(path), idx, usage["input_tokens"], usage["output_tokens"],
                     usage["cache_read_tokens"], usage["cache_write_tokens"], usage["total_tokens"],
                     usage["cost_usd"], usage["context_window"], usage["max_output_tokens"],
-                    previous_user[:800], text[:1200],
-                    previous_user, text
+                    prompt_full[:800], text[:1200],
+                    prompt_full, text
                 )
             )
+            # The context that produced this reply has now been used --
+            # the next assistant turn's context starts fresh from here.
+            pending_context = []
         blocks = content if isinstance(content, list) else []
         for b in blocks:
             if not isinstance(b, dict) or b.get("type") != "tool_use":
