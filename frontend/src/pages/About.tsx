@@ -97,6 +97,27 @@ export function About() {
         </p>
       </Section>
 
+      <Section title="Why is “cache read” so much bigger than “input”?">
+        <p className="mb-3">
+          Claude Code sends your entire conversation on every request (the API is stateless), but most of that —
+          the system prompt, tool definitions, and everything said earlier in the session — is usually a prompt-cache
+          hit by the second turn. The API bills that reused portion as <span className="font-mono">cache read</span>,
+          at a fraction of fresh-token cost, and only counts genuinely new content as{' '}
+          <span className="font-mono">input</span>. So a request showing <b>Input: 2</b> and{' '}
+          <b>Cache read: 764,387</b> isn't hiding anything — that 764K really is mostly your system prompt and prior
+          conversation, exact and fully accounted for, just filed under a different label than you might expect.
+        </p>
+        <p>
+          One limitation worth naming directly: Claude Code doesn't expose the literal system prompt or tool
+          definition text anywhere this collector can see — not in session transcripts, not in hook payloads. So the{' '}
+          <Link to="/requests" className="text-accent-strong hover:underline">
+            full prompt view
+          </Link>{' '}
+          can show you every user message and tool result that went into a request, but never the system prompt
+          itself. Its exact token cost is still fully captured above — just not its content.
+        </p>
+      </Section>
+
       <Section title="What's excluded on purpose">
         <p>
           Cost/pricing columns are intentionally left out of the primary UI — billing depends on the plan in

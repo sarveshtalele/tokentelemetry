@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
-import { useLiveData } from '../hooks/useLiveData';
+import { useLive } from '../context/LiveContext';
 import { getProjects } from '../api/projects';
 import { getUsageTimeline } from '../api/usage';
 import { getClients } from '../api/clients';
@@ -15,10 +15,16 @@ import { Link } from 'react-router-dom';
 export function GlobalDashboard() {
   const [days, setDays] = useState('0');
   const rangeLabel = days === '0' ? 'all time' : `${days}d`;
-  const { data: projects = [], loading: loadingProjects, error: errProjects } = useApi(() => getProjects(), []);
-  const { data: timeline = [], loading: loadingTimeline, error: errTimeline } = useApi(() => getUsageTimeline(Number(days)), [days]);
-  const { data: clients = [] } = useApi(() => getClients(), []);
-  const live = useLiveData();
+  const live = useLive();
+  // live.version bumps whenever the backend pushes a change over /ws/live,
+  // so these refetch on their own as new data lands instead of only on a
+  // manual Refresh click.
+  const { data: projects = [], loading: loadingProjects, error: errProjects } = useApi(() => getProjects(), [live.version]);
+  const { data: timeline = [], loading: loadingTimeline, error: errTimeline } = useApi(
+    () => getUsageTimeline(Number(days)),
+    [days, live.version]
+  );
+  const { data: clients = [] } = useApi(() => getClients(), [live.version]);
 
   const totals = useMemo(() => {
     const input = timeline.reduce((a, d) => a + (d.input || 0), 0);
@@ -32,9 +38,14 @@ export function GlobalDashboard() {
 
   const error = errProjects || errTimeline;
   if (error) return <ErrorPanel message={error.message} />;
-  if (loadingProjects || loadingTimeline) return <div className="p-10 text-center text-ink-soft">Loading overview…</div>;
+  // Only block the whole page on the very first load -- a background
+  // refetch triggered by live.version shouldn't wipe the dashboard while
+  // it re-fetches; the stale data stays on screen until the new data lands.
+  if ((loadingProjects && projects.length === 0) || (loadingTimeline && timeline.length === 0)) {
+    return <div className="p-10 text-center text-ink-soft">Loading overview…</div>;
+  }
 
-  const liveTotal = live.total_tokens as number | undefined;
+  const liveTotal = live.metrics.total_tokens as number | undefined;
   const topClient = clients[0];
 
   return (
