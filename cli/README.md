@@ -9,25 +9,18 @@ The npm package bundles the backend, telemetry collector, hooks, and a
 pre-built copy of the dashboard, so once it's built, no separate `git clone`
 is required to run it.
 
-This package is **not published to the npm registry** — build and install it
-locally from a checkout of this repo. The easiest way is the one-shot setup
-script, which detects your system, builds + installs the global
-`tokentelemetry` command, runs the app install, and then drops you into an
-interactive Start/Stop/Status/Uninstall menu:
+Published on the npm registry — the fastest way to run it is `npx`, no clone required:
 
 ```
-git clone https://github.com/sarveshtalele/tokentelemetry.git
-cd tokentelemetry
-node cli/setup.js
+npx tokentelemetry
 ```
 
-To do the same steps by hand instead (e.g. for scripting, or if you just
-want the global command without the interactive menu):
+For daily use, install it globally instead so it doesn't re-resolve the
+package over the network on every run:
 
 ```
-cd tokentelemetry/cli
-npm pack --pack-destination /tmp              # runs the prepack build (vendors everything)
-npm install -g /tmp/tokentelemetry-1.0.0.tgz  # installs `tokentelemetry` globally
+npm install -g tokentelemetry
+tokentelemetry
 ```
 
 ## Usage
@@ -45,11 +38,24 @@ tokentelemetry uninstall          # remove the Claude Code hooks (add --purge to
 
 Then open **http://127.0.0.1:5173**.
 
-None of the commands above rebuild or reinstall anything — each just does
-the one thing named. Only bare `node cli/setup.js` (or `node cli/setup.js
-install`) does the full detect + build + install. If you're running from
-the repo checkout rather than the global command, `cli/setup.js` has the
-same fast subcommands and skips the rebuild too:
+None of the commands above rebuild or reinstall anything — each just does the one thing named.
+
+### Installing from source instead
+
+For contributing, or to run a commit that hasn't been published yet:
+
+```
+git clone https://github.com/sarveshtalele/tokentelemetry.git
+cd tokentelemetry
+node cli/setup.js
+```
+
+This detects your system, builds + installs the global `tokentelemetry`
+command from this checkout (`npm pack` + `npm install -g`, not the
+registry), runs the app install, and drops you into an interactive
+Start/Stop/Status/Uninstall menu. Only bare `node cli/setup.js` (or `node
+cli/setup.js install`) does the full detect + build + install — the same
+fast subcommands work from the checkout too, and skip the rebuild:
 
 ```
 node cli/setup.js start     # start the backend, daemon, and dashboard
@@ -59,10 +65,6 @@ node cli/setup.js delete    # full teardown: remove hooks + ~/.tokentelemetry
 node cli/setup.js uninstall # remove hooks only, keep app files/database (add --purge for delete's behavior)
 node cli/setup.js install   # re-run the full build+install, e.g. after `git pull`
 ```
-
-If this ever gets published to npm for real, the global-command usage above
-collapses to plain `npx tokentelemetry ...` — no local build/install step
-needed.
 
 ## What "install" does
 
