@@ -146,6 +146,16 @@ function uninstall({ purge = false } = {}) {
 
   const dirExists = fs.existsSync(paths.installDir());
   if (purge) {
+    if (dirExists) {
+      try {
+        // Detached processes survive deleting installDir (which holds
+        // run.json), leaving them bound to the fixed backend/dashboard ports
+        // with no record for a later "start" to find -- stop them first.
+        require('./run').stop();
+      } catch (err) {
+        log(`Could not stop running services (continuing): ${err.message}`);
+      }
+    }
     try {
       const autostart = require('./autostart');
       if (autostart.isEnabled()) {
