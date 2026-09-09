@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
+import { useLive } from '../context/LiveContext';
 import { getUsage } from '../api/usage';
 import { getProjects } from '../api/projects';
 import { DataTable } from '../components/data/DataTable';
@@ -18,9 +19,10 @@ export function Requests() {
   const [project, setProject] = useState('');
   const [q, setQ] = useState('');
   const [selected, setSelected] = useState<UsageRow | null>(null);
+  const { version: liveVersion } = useLive();
   const { data: usage = [], loading, error, reload } = useApi(
     () => getUsage({ page: String(page), page_size: '100', ...(project ? { project } : {}) }),
-    [page, project]
+    [page, project, liveVersion]
   );
   const { data: projects = [] } = useApi(() => getProjects(), []);
 
@@ -75,7 +77,7 @@ export function Requests() {
         />
         <ProjectFilter projects={projects.map((p) => p.project)} value={project} onChange={(v) => { setProject(v); setPage(1); }} />
       </div>
-      {loading ? (
+      {loading && usage.length === 0 ? (
         <div className="p-10 text-center text-ink-soft">Loading requests…</div>
       ) : (
         <DataTable<UsageRow>
