@@ -9,7 +9,7 @@
   <img src="https://img.shields.io/badge/Data-100%25%20Local--first-brightgreen" alt="Local-first">
   <img src="https://img.shields.io/badge/Attribution-Exact%20%2B%20Estimated%2C%20Always%20Labeled-blue" alt="Attribution">
   <img src="https://github.com/sarveshtalele/tokentelemetry/actions/workflows/ci.yml/badge.svg" alt="CI status">
-  <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT">
+  <img src="https://img.shields.io/badge/License-All%20rights%20reserved-lightgrey.svg" alt="License: all rights reserved">
 </p>
 
 Install with a single `npx tokentelemetry`. Works with **Claude Code**, **Cursor**,
@@ -262,4 +262,5 @@ automatically; see [`.github/`](.github) for the configs.
 
 ## License
 
-[MIT](LICENSE).
+No license is currently granted. All rights reserved — this source is visible for reference,
+but you don't have permission to copy, modify, or redistribute it without asking first.
